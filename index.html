@@ -33,10 +33,24 @@
     }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col font-sans">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col font-sans relative">
+
+  <!-- 🌟 全頁 Loading 遮罩動畫 (資料載入期間顯示並防誤觸) -->
+  <div id="globalLoading" class="fixed inset-0 bg-white/90 backdrop-blur-md z-50 flex flex-col items-center justify-center space-y-4 transition-opacity duration-300">
+    <div class="relative flex items-center justify-center">
+      <!-- 外圈旋轉 Spinner -->
+      <div class="w-16 h-16 border-4 border-brand-100 border-t-brand-500 rounded-full animate-spin"></div>
+      <!-- 中心 圖示 -->
+      <i data-lucide="database" class="w-6 h-6 text-brand-500 absolute"></i>
+    </div>
+    <div class="text-center space-y-1">
+      <p class="text-base font-bold text-gray-800">資料同步中，請稍候...</p>
+      <p class="text-xs text-gray-500">正在從 Google Sheets 取得最新的產品目錄</p>
+    </div>
+  </div>
 
   <!-- Header 頂部導覽列 -->
-  <header class="brand-gradient text-white shadow-md sticky top-0 z-50">
+  <header class="brand-gradient text-white shadow-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
       <div class="flex items-center gap-3">
         <div class="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
@@ -71,7 +85,8 @@
             type="text" 
             id="searchInput"
             placeholder="搜尋主要產品名稱、規格或關鍵字..." 
-            class="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all shadow-sm"
+            disabled
+            class="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all shadow-sm disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
             oninput="handleSearch()"
           >
           <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
@@ -86,32 +101,12 @@
           <i data-lucide="filter" class="w-3.5 h-3.5 text-brand-500"></i> 按產品線快速篩選
         </label>
         <div id="categoryTags" class="flex flex-wrap gap-2 pt-1">
-          <button onclick="filterCategory('ALL')" class="category-btn active bg-brand-500 text-white px-4 py-1.5 rounded-full text-sm font-medium transition-all shadow-sm">
-            全部產品線
+          <button disabled onclick="filterCategory('ALL')" class="category-btn active bg-brand-500 text-white px-4 py-1.5 rounded-full text-sm font-medium transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            載入中...
           </button>
-          <!-- 動態生成產品線按鈕 -->
         </div>
       </div>
     </section>
-
-    <!-- 載入中狀態 (Loading Skeleton) -->
-    <div id="loadingState" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-8">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse space-y-4">
-        <div class="h-6 bg-gray-200 rounded w-1/3"></div>
-        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-        <div class="h-20 bg-gray-100 rounded"></div>
-      </div>
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse space-y-4">
-        <div class="h-6 bg-gray-200 rounded w-1/3"></div>
-        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-        <div class="h-20 bg-gray-100 rounded"></div>
-      </div>
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse space-y-4">
-        <div class="h-6 bg-gray-200 rounded w-1/3"></div>
-        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-        <div class="h-20 bg-gray-100 rounded"></div>
-      </div>
-    </div>
 
     <!-- 查無資料提示 -->
     <div id="noDataState" class="hidden text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm space-y-3">
@@ -132,7 +127,7 @@
   <!-- Footer 頁尾 -->
   <footer class="bg-white border-t border-gray-200 mt-auto py-6">
     <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500 space-y-1">
-      <p>產品線視覺化查詢系統 &copy; Powered by Google Apps Script</p>
+      <p>產品線視覺化查詢系統 &copy; Powered by Google Apps Script & GitHub Pages</p>
       <p class="text-gray-400">資料來源：Google Sheets 自動實時同步</p>
     </div>
   </footer>
@@ -150,56 +145,73 @@
       fetchSheetData();
     };
 
-function fetchSheetData() {
-  // ⚠️ 務必填入你真實的 Apps Script Web App 網址（末端必須是 /exec）
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZj0MaQKmVItG0rtXQBtQeGjp8JmQ7_Vs8sBvNAfm36ra2i8ikcXoXMBA4xgrnpAQpEQ/exec";
+    // 從 Google Apps Script API 取得 JSON 資料
+    function fetchSheetData() {
+      // ⚠️ 務必替換為你真實的 Apps Script Web App 網址（結尾須為 /exec）
+      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZj0MaQKmVItG0rtXQBtQeGjp8JmQ7_Vs8sBvNAfm36ra2i8ikcXoXMBA4xgrnpAQpEQ/exec";
 
-  fetch(GAS_API_URL)
-    .then(response => {
-      if (!response.ok) throw new Error('網路回應異常');
-      return response.json();
-    })
-    .then(data => onDataLoaded(data))
-    .catch(err => {
-      console.error('詳細錯誤訊息:', err);
-      onDataError(err);
-    });
-}
+      setControlsDisabled(true); // 鎖定操作介面
 
-
+      fetch(GAS_API_URL)
+        .then(response => {
+          if (!response.ok) throw new Error('網路連線失敗');
+          return response.json();
+        })
+        .then(data => onDataLoaded(data))
+        .catch(err => {
+          console.error(err);
+          onDataError(err);
+        });
+    }
 
     function onDataLoaded(response) {
-      document.getElementById('loadingState').classList.add('hidden');
+      // 隱藏全頁 Loading 畫面
+      const loadingOverlay = document.getElementById('globalLoading');
+      if (loadingOverlay) {
+        loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => loadingOverlay.classList.add('hidden'), 300);
+      }
 
       if (response.error) {
         alert('資料讀取失敗：' + response.error);
         return;
       }
 
-      headers = response.headers;
-      rawData = response.rows;
+      headers = response.headers || [];
+      rawData = response.rows || [];
 
       if (!rawData || rawData.length === 0) {
         document.getElementById('noDataState').classList.remove('hidden');
         return;
       }
 
-      // 自動辨識「產品線」與「主要產品」欄位名稱
+      // 自動辨識欄位
       detectKeyColumns();
       
-      // 渲染產品線篩選按鈕
+      // 渲染分類與產品列表
       renderCategoryTags();
-      
-      // 渲染產品列表
       renderProducts();
 
-      // 更新頁面統計
+      // 解鎖搜尋欄與控制介面
+      setControlsDisabled(false);
+
+      // 更新統計數字
       updateStats();
     }
 
     function onDataError(err) {
-      document.getElementById('loadingState').classList.add('hidden');
-      alert('無法連線至 Google Sheets，請檢查後端發布設定。');
+      const loadingOverlay = document.getElementById('globalLoading');
+      if (loadingOverlay) loadingOverlay.classList.add('hidden');
+      alert('無法連線至 Google Sheets API，請檢查 Apps Script 發布權限是否設為「所有人」。');
+    }
+
+    // 控制所有表單元件的 Enable / Disable 狀態
+    function setControlsDisabled(disabled) {
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) searchInput.disabled = disabled;
+
+      const catBtns = document.querySelectorAll('.category-btn');
+      catBtns.forEach(btn => btn.disabled = disabled);
     }
 
     // 自動探測產品線與主要產品對應欄位
@@ -238,12 +250,8 @@ function fetchSheetData() {
       const noData = document.getElementById('noDataState');
 
       const filtered = rawData.filter(item => {
-        // 產品線篩選
         const matchCategory = selectedCategory === 'ALL' || item[productLineKey] === selectedCategory;
-        
-        // 關鍵字全欄位搜尋
         const matchSearch = !keyword || Object.values(item).some(val => String(val).toLowerCase().includes(keyword));
-
         return matchCategory && matchSearch;
       });
 
@@ -259,7 +267,6 @@ function fetchSheetData() {
         const categoryName = item[productLineKey] || '未分類';
         const productName = item[mainProductKey] || '未命名產品';
 
-        // 剩餘欄位內容作為規格/說明展延
         const otherDetails = Object.keys(item)
           .filter(k => k !== productLineKey && k !== mainProductKey && item[k])
           .map(k => `
@@ -272,7 +279,6 @@ function fetchSheetData() {
         return `
           <article class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all flex flex-col justify-between space-y-4 group">
             <div class="space-y-3">
-              <!-- 產品線分類 Badge -->
               <div class="flex justify-between items-center">
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-500 border border-brand-100">
                   ${categoryName}
@@ -280,12 +286,10 @@ function fetchSheetData() {
                 <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 group-hover:text-brand-500 group-hover:translate-x-1 transition-all"></i>
               </div>
 
-              <!-- 主要產品標題 -->
               <h3 class="text-lg font-bold text-gray-800 group-hover:text-brand-500 transition-colors leading-snug">
                 ${productName}
               </h3>
 
-              <!-- 關鍵規格/詳細資訊列表 -->
               <div class="bg-gray-50/70 p-3 rounded-xl space-y-0.5">
                 ${otherDetails || '<p class="text-xs text-gray-400">無其他詳細規格</p>'}
               </div>
