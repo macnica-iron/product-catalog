@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>產品目錄與產品線總覽</title>
+  <title>Macnica - 產品目錄與產品線總覽</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Custom Color System (RGB 116, 29, 128) -->
@@ -49,22 +49,27 @@
 
   <!-- Header 頂部導覽列 -->
   <header class="brand-gradient text-white shadow-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <div class="flex items-center gap-3">
-        <div class="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
-          <i data-lucide="layers" class="w-7 h-7 text-white"></i>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      
+      <!-- 🌟 公司 Logo 與副標題 -->
+      <div class="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
+        <div class="bg-white/95 px-3.5 py-2 rounded-xl shadow-sm flex items-center justify-center">
+          <img 
+            src="https://www.macnica.com/content/experience-fragments/macnicagwi/apac/galaxy/zh_tw/site/header/master/_jcr_content/root/image.coreimg.svg/1723113588126/macnica-new-logo.svg" 
+            alt="Macnica Logo" 
+            class="h-7 sm:h-8 object-contain"
+          >
         </div>
         <div>
-          <h1 class="text-2xl font-bold tracking-tight">產品目錄與產品線總覽</h1>
-          <p class="text-xs text-brand-100 opacity-90">Google Sheets 動態即時同步網站</p>
+          <h1 class="text-base sm:text-lg font-semibold tracking-wide text-brand-50">產品目錄與產品線總覽</h1>
         </div>
       </div>
-      <!-- 統計數據 -->
-      <div id="statsBadge" class="hidden sm:flex items-center gap-4 text-xs bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
-        <span>產品線: <strong id="productLineCount" class="text-yellow-300 font-bold">0</strong></span>
-        <span class="border-r border-white/20 h-3"></span>
-        <span>總產品數: <strong id="totalProductCount" class="text-yellow-300 font-bold">0</strong></span>
+
+      <!-- 🌟 右上角統計數據（僅保留產品線數量） -->
+      <div id="statsBadge" class="hidden sm:flex items-center text-xs bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+        <span>產品線數量: <strong id="productLineCount" class="text-yellow-300 font-bold ml-1 text-sm">0</strong></span>
       </div>
+
     </div>
   </header>
 
@@ -110,7 +115,7 @@
   <!-- Footer 頁尾 -->
   <footer class="bg-white border-t border-gray-200 mt-auto py-6">
     <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500 space-y-1">
-      <p>產品線視覺化查詢系統 &copy; Powered by Google Apps Script & GitHub Pages</p>
+      <p>Macnica 產品線視覺化查詢系統 &copy; Powered by Google Apps Script & GitHub Pages</p>
       <p class="text-gray-400">資料來源：Google Sheets 自動實時同步</p>
     </div>
   </footer>
@@ -242,7 +247,7 @@
         });
 
         // 轉換為 HTML 格式
-        const detailsHtml = detailsList.map((d, idx) => `
+        const detailsHtml = detailsList.map(d => `
           <div class="flex justify-between items-center text-xs py-1.5 border-b border-gray-100 last:border-0">
             <span class="text-gray-400 font-medium shrink-0 mr-2">${d.key}</span>
             <span class="text-gray-700 font-semibold text-right break-all">${d.val}</span>
@@ -300,7 +305,6 @@
     function updateStats() {
       const categories = new Set(rawData.map(item => item[productLineKey]).filter(Boolean));
       document.getElementById('productLineCount').innerText = categories.size;
-      document.getElementById('totalProductCount').innerText = rawData.length;
     }
   </script>
 </body>
