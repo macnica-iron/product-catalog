@@ -225,45 +225,47 @@
         const mainProductDescKey = Object.keys(item).find(k => k.includes('主要產品') || k.includes('描述') || k.includes('簡介'));
         const mainProductDesc = mainProductDescKey ? item[mainProductDescKey] : '';
 
-        // 3. 過濾出中間欄位 (排除 Logo 列、主要產品列與主標題列)
-        const otherDetails = Object.keys(item)
-          .filter(k => {
-            const isLogo = logoKey ? (k === logoKey) : k.toLowerCase().includes('logo');
-            const isMainDesc = mainProductDescKey ? (k === mainProductDescKey) : k.includes('主要產品');
-            const isTitle = (k === mainProductKey);
-            return !isLogo && !isMainDesc && !isTitle && item[k];
-          })
-          .map(k => `
-            <div class="flex justify-between items-center text-xs py-1.5 border-b border-gray-100 last:border-0">
-              <span class="text-gray-400 font-medium shrink-0 mr-2">${k}</span>
-              <span class="text-gray-700 font-semibold text-right break-all">${item[k]}</span>
-            </div>
-          `).join('');
+        // 3. 組合中間的規格列表（第一項固定為「產品線 / 原廠」）
+        const detailsList = [];
+        
+        // 加入「產品線 / 原廠」第一列
+        detailsList.push({ key: '產品線 / 原廠', val: titleName });
+
+        // 加入其他欄位 (排除 Logo 列、主要產品列與主標題列)
+        Object.keys(item).forEach(k => {
+          const isLogo = logoKey ? (k === logoKey) : k.toLowerCase().includes('logo');
+          const isMainDesc = mainProductDescKey ? (k === mainProductDescKey) : k.includes('主要產品');
+          const isTitle = (k === mainProductKey);
+          if (!isLogo && !isMainDesc && !isTitle && item[k]) {
+            detailsList.push({ key: k, val: item[k] });
+          }
+        });
+
+        // 轉換為 HTML 格式
+        const detailsHtml = detailsList.map((d, idx) => `
+          <div class="flex justify-between items-center text-xs py-1.5 border-b border-gray-100 last:border-0">
+            <span class="text-gray-400 font-medium shrink-0 mr-2">${d.key}</span>
+            <span class="text-gray-700 font-semibold text-right break-all">${d.val}</span>
+          </div>
+        `).join('');
 
         return `
           <article class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all flex flex-col justify-between space-y-4 group">
             <div class="space-y-4">
               
-              <!-- 🌟 1. 置中 Logo (寬度放大至卡片 2/3) -->
+              <!-- 1. 置中 Logo (寬度為卡片 2/3) -->
               ${logoUrl ? `
-                <div class="flex justify-center items-center pt-2 pb-1">
+                <div class="flex justify-center items-center pt-2 pb-1 min-h-[70px]">
                   <img src="${logoUrl}" alt="${titleName} Logo" class="w-2/3 max-h-20 object-contain mx-auto" onerror="this.parentNode.style.display='none'">
                 </div>
               ` : ''}
 
-              <!-- 2. 主標題名稱 (置中) -->
-              <h3 class="text-xl font-bold text-gray-800 text-center group-hover:text-brand-500 transition-colors leading-snug">
-                ${titleName}
-              </h3>
+              <!-- 2. 統一的規格資訊區塊 (包含：產品線 / 原廠 & 所在地 / 區域 等) -->
+              <div class="bg-gray-50/70 p-3.5 rounded-xl space-y-0.5">
+                ${detailsHtml}
+              </div>
 
-              <!-- 3. 詳細規格屬性 (如：所在地 / 區域) -->
-              ${otherDetails ? `
-                <div class="bg-gray-50/70 p-3.5 rounded-xl space-y-0.5">
-                  ${otherDetails}
-                </div>
-              ` : ''}
-
-              <!-- 🌟 4. 最下方主要產品內容 (拿掉「主要產品」標題，內容完全置中) -->
+              <!-- 3. 最下方主要產品內容 (內容完全置中) -->
               ${mainProductDesc ? `
                 <div class="bg-brand-50/60 p-4 rounded-xl border border-brand-100/60 text-center text-xs font-medium text-gray-700 leading-relaxed">
                   ${mainProductDesc}
