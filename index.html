@@ -150,16 +150,22 @@
       fetchSheetData();
     };
 
-// 從 Google Apps Script API 取得 JSON 資料
-    function fetchSheetData() {
-      // 替換成你的 Apps Script Web App 網址
-      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZj0MaQKmVItG0rtXQBtQeGjp8JmQ7_Vs8sBvNAfm36ra2i8ikcXoXMBA4xgrnpAQpEQ/exec";
+function fetchSheetData() {
+  // ⚠️ 務必填入你真實的 Apps Script Web App 網址（末端必須是 /exec）
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZj0MaQKmVItG0rtXQBtQeGjp8JmQ7_Vs8sBvNAfm36ra2i8ikcXoXMBA4xgrnpAQpEQ/exec";
 
-      fetch(GAS_API_URL)
-        .then(response => response.json())
-        .then(data => onDataLoaded(data))
-        .catch(err => onDataError(err));
-    }
+  fetch(GAS_API_URL)
+    .then(response => {
+      if (!response.ok) throw new Error('網路回應異常');
+      return response.json();
+    })
+    .then(data => onDataLoaded(data))
+    .catch(err => {
+      console.error('詳細錯誤訊息:', err);
+      onDataError(err);
+    });
+}
+
 
 
     function onDataLoaded(response) {
