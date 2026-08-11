@@ -49,24 +49,22 @@
 
   <!-- Header 頂部導覽列 -->
   <header class="brand-gradient text-white shadow-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-row justify-between items-center gap-4">
       
-      <!-- 🌟 公司 Logo 與副標題 -->
-      <div class="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
-        <div class="bg-white/95 px-3.5 py-2 rounded-xl shadow-sm flex items-center justify-center">
-          <img 
-            src="https://www.macnica.com/content/experience-fragments/macnicagwi/apac/galaxy/zh_tw/site/header/master/_jcr_content/root/image.coreimg.svg/1723113588126/macnica-new-logo.svg" 
-            alt="Macnica Logo" 
-            class="h-7 sm:h-8 object-contain"
-          >
-        </div>
-        <div>
-          <h1 class="text-base sm:text-lg font-semibold tracking-wide text-brand-50">產品目錄與產品線總覽</h1>
-        </div>
+      <!-- 🌟 公司 Logo 與換行標題 -->
+      <div class="flex flex-col items-start gap-1">
+        <img 
+          src="https://www.macnica.com/content/experience-fragments/macnicagwi/apac/galaxy/zh_tw/site/header/master/_jcr_content/root/image.coreimg.svg/1723113588126/macnica-new-logo.svg" 
+          alt="Macnica Logo" 
+          class="h-6 sm:h-7 object-contain [filter:brightness(0)_invert(1)]"
+        >
+        <h1 class="text-xs sm:text-sm font-medium tracking-wider text-brand-100 opacity-90">
+          產品目錄與產品線總覽
+        </h1>
       </div>
 
       <!-- 🌟 右上角統計數據（僅保留產品線數量） -->
-      <div id="statsBadge" class="hidden sm:flex items-center text-xs bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+      <div id="statsBadge" class="flex items-center text-xs bg-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-sm">
         <span>產品線數量: <strong id="productLineCount" class="text-yellow-300 font-bold ml-1 text-sm">0</strong></span>
       </div>
 
