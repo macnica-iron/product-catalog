@@ -161,21 +161,38 @@
       // ⚠️ 務必替換為你真實的 Apps Script Web App 網址（結尾須為 /exec）
       const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZj0MaQKmVItG0rtXQBtQeGjp8JmQ7_Vs8sBvNAfm36ra2i8ikcXoXMBA4xgrnpAQpEQ/exec";
 
-      setSearchDisabled(true);
+      // 🌟 1. 先讀取本機瀏覽器上次存的快取（0 秒秒開）
+      const localCache = localStorage.getItem('macnica_local_data');
+      if (localCache) {
+        try {
+          const parsedData = JSON.parse(localCache);
+          onDataLoaded(parsedData, true); // true 代表從快取讀取，先關閉 Loading
+        } catch(e) {}
+      } else {
+        setSearchDisabled(true);
+      }
 
+      // 🌟 2. 背景同步最新資料
       fetch(GAS_API_URL)
         .then(response => {
           if (!response.ok) throw new Error('網路連線失敗');
           return response.json();
         })
-        .then(data => onDataLoaded(data))
+        .then(data => {
+          if (!data.error) {
+            // 將最新資料寫入瀏覽器 LocalStorage
+            localStorage.setItem('macnica_local_data', JSON.stringify(data));
+          }
+          onDataLoaded(data, false);
+        })
         .catch(err => {
           console.error(err);
-          onDataError(err);
+          if (!localCache) onDataError(err);
         });
     }
 
-    function onDataLoaded(response) {
+    function onDataLoaded(response, isFromLocalCache) {
+      // 隱藏全頁 Loading 畫面
       const loadingOverlay = document.getElementById('globalLoading');
       if (loadingOverlay) {
         loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
@@ -183,7 +200,7 @@
       }
 
       if (response.error) {
-        alert('資料讀取失敗：' + response.error);
+        if (!isFromLocalCache) alert('資料讀取失敗：' + response.error);
         return;
       }
 
