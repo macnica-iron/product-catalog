@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Macnica - 產品目錄與產品線總覽</title>
+  <title>Macnica - 產品目錄與展示總覽</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Custom Color System (RGB 116, 29, 128) -->
@@ -43,7 +43,7 @@
     </div>
     <div class="text-center space-y-1">
       <p class="text-base font-bold text-gray-800">資料同步中，請稍候...</p>
-      <p class="text-xs text-gray-500">正在從 Google Sheets 取得最新的產品目錄</p>
+      <p class="text-xs text-gray-500">正在從 Google Sheets 取得最新的資料庫內容</p>
     </div>
   </div>
 
@@ -51,23 +51,49 @@
   <header class="brand-gradient text-white shadow-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-row justify-between items-center gap-4">
       
-      <!-- 🌟 公司 Logo 與換行標題 -->
+      <!-- 公司 Logo 與換行動態標題 -->
       <div class="flex flex-col items-start gap-1">
         <img 
           src="https://www.macnica.com/content/experience-fragments/macnicagwi/apac/galaxy/zh_tw/site/header/master/_jcr_content/root/image.coreimg.svg/1723113588126/macnica-new-logo.svg" 
           alt="Macnica Logo" 
           class="h-6 sm:h-7 object-contain [filter:brightness(0)_invert(1)]"
         >
-        <h1 class="text-xs sm:text-sm font-medium tracking-wider text-brand-100 opacity-90">
+        <h1 id="headerSubtitle" class="text-xs sm:text-sm font-medium tracking-wider text-brand-100 opacity-90">
           產品目錄與產品線總覽
         </h1>
       </div>
 
-      <!-- 🌟 右上角統計數據（僅保留產品線數量） -->
+      <!-- 右上角動態統計數據 -->
       <div id="statsBadge" class="flex items-center text-xs bg-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-sm">
-        <span>產品線數量: <strong id="productLineCount" class="text-yellow-300 font-bold ml-1 text-sm">0</strong></span>
+        <span id="statLabel">產品線數量:</span>
+        <strong id="productLineCount" class="text-yellow-300 font-bold ml-1 text-sm">0</strong>
       </div>
 
+    </div>
+
+    <!-- 🌟 主流切換分頁選單 (RWD + 滑動適應) -->
+    <div class="bg-black/10 border-t border-white/10 backdrop-blur-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-2 overflow-x-auto py-2">
+        
+        <button 
+          id="tab-productLine" 
+          onclick="switchTab('productLine')" 
+          class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap bg-white text-brand-700 shadow-sm"
+        >
+          <i data-lucide="package" class="w-4 h-4"></i>
+          <span>產品目錄與產品線總覽</span>
+        </button>
+
+        <button 
+          id="tab-demonstration" 
+          onclick="switchTab('demonstration')" 
+          class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap text-brand-100 hover:bg-white/10 hover:text-white"
+        >
+          <i data-lucide="presentation" class="w-4 h-4"></i>
+          <span>Ready to Demonstrations</span>
+        </button>
+
+      </div>
     </div>
   </header>
 
@@ -83,7 +109,7 @@
         <input 
           type="text" 
           id="searchInput"
-          placeholder="搜尋主要產品名稱、規格或關鍵字..." 
+          placeholder="搜尋關鍵字、規格或名稱..." 
           disabled
           class="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all shadow-sm disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
           oninput="handleSearch()"
@@ -97,32 +123,34 @@
     <!-- 查無資料提示 -->
     <div id="noDataState" class="hidden text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm space-y-3">
       <i data-lucide="package-x" class="w-12 h-12 text-gray-300 mx-auto"></i>
-      <h3 class="text-lg font-bold text-gray-700">找不到符合條件的產品</h3>
+      <h3 class="text-lg font-bold text-gray-700">找不到符合條件的項目</h3>
       <p class="text-sm text-gray-500">請嘗試更換關鍵字重新搜尋</p>
       <button onclick="clearSearch()" class="mt-2 inline-flex items-center gap-2 bg-brand-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-brand-600 transition-colors">
         清除搜尋條件
       </button>
     </div>
 
-    <!-- 產品列表卡片網格 (RWD: 手機 1 欄 / 平板 2 欄 / 桌機 3 欄) -->
+    <!-- 列表卡片網格 (RWD: 手機 1 欄 / 平板 2 欄 / 桌機 3 欄) -->
     <section id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- 產品卡片將由 JavaScript 動態渲染 -->
+      <!-- 內容將由 JavaScript 動態渲染 -->
     </section>
   </main>
 
   <!-- Footer 頁尾 -->
   <footer class="bg-white border-t border-gray-200 mt-auto py-6">
     <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500 space-y-1">
-      <p>Macnica 產品線視覺化查詢系統 &copy; Powered by Google Apps Script & GitHub Pages</p>
+      <p>Macnica 產品與展示視覺化查詢系統 &copy; Powered by Google Apps Script & GitHub Pages</p>
       <p class="text-gray-400">資料來源：Google Sheets 自動實時同步</p>
     </div>
   </footer>
 
   <script>
-    let rawData = [];
-    let headers = [];
-    let productLineKey = '';
-    let mainProductKey = '';
+    let allData = {
+      productLine: { headers: [], rows: [] },
+      demonstration: { headers: [], rows: [] }
+    };
+    
+    let activeTab = 'productLine'; // 當前頁籤: 'productLine' 或 'demonstration'
 
     window.onload = function() {
       lucide.createIcons();
@@ -159,18 +187,17 @@
         return;
       }
 
-      headers = response.headers || [];
-      rawData = response.rows || [];
-
-      if (!rawData || rawData.length === 0) {
-        document.getElementById('noDataState').classList.remove('hidden');
-        return;
+      // 支援多工作表 JSON 結構
+      if (response.productLine) {
+        allData.productLine = response.productLine;
+        allData.demonstration = response.demonstration || { headers: [], rows: [] };
+      } else {
+        allData.productLine = { headers: response.headers || [], rows: response.rows || [] };
+        allData.demonstration = { headers: [], rows: [] };
       }
 
-      detectKeyColumns();
-      renderProducts();
       setSearchDisabled(false);
-      updateStats();
+      renderCurrentTab();
     }
 
     function onDataError(err) {
@@ -184,9 +211,36 @@
       if (searchInput) searchInput.disabled = disabled;
     }
 
-    function detectKeyColumns() {
-      productLineKey = headers.find(h => h.includes('產品線') || h.includes('類別') || h.toLowerCase().includes('category')) || headers[0];
-      mainProductKey = headers.find(h => h.includes('產品') || h.includes('品名') || h.includes('品牌') || h.toLowerCase().includes('product')) || headers[0];
+    // 🌟 切換頁籤邏輯
+    function switchTab(tabKey) {
+      if (activeTab === tabKey) return;
+      activeTab = tabKey;
+
+      // 更新 Tab 標籤樣式
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = "tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap text-brand-100 hover:bg-white/10 hover:text-white";
+      });
+
+      const activeBtn = document.getElementById(`tab-${tabKey}`);
+      if (activeBtn) {
+        activeBtn.className = "tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap bg-white text-brand-700 shadow-sm";
+      }
+
+      // 清除搜尋框並重新渲染
+      clearSearch();
+      renderCurrentTab();
+    }
+
+    function renderCurrentTab() {
+      if (activeTab === 'productLine') {
+        document.getElementById('headerSubtitle').innerText = "產品目錄與產品線總覽";
+        document.getElementById('statLabel').innerText = "產品線數量:";
+        renderProductLineTab();
+      } else {
+        document.getElementById('headerSubtitle').innerText = "Ready to Demonstrations";
+        document.getElementById('statLabel').innerText = "展示項目數:";
+        renderDemonstrationTab();
+      }
     }
 
     // 從字串提取圖片 URL
@@ -197,21 +251,33 @@
       return match ? match[0] : null;
     }
 
-    function renderProducts() {
-      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-      const grid = document.getElementById('productGrid');
-      const noData = document.getElementById('noDataState');
+    // 🌟 頁籤 1: 產品目錄與產品線總覽 (完全保持原本設計)
+    function renderProductLineTab() {
+      const sheetData = allData.productLine;
+      const headers = sheetData.headers || [];
+      const rawData = sheetData.rows || [];
 
+      const productLineKey = headers.find(h => h.includes('產品線') || h.includes('類別') || h.toLowerCase().includes('category')) || headers[0];
+      const mainProductKey = headers.find(h => h.includes('產品') || h.includes('品名') || h.includes('品牌') || h.toLowerCase().includes('product')) || headers[0];
+
+      // 更新右上角統計
+      const categories = new Set(rawData.map(item => item[productLineKey]).filter(Boolean));
+      document.getElementById('productLineCount').innerText = categories.size;
+
+      // 搜尋過濾
+      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
       const filtered = rawData.filter(item => {
         return !keyword || Object.values(item).some(val => String(val).toLowerCase().includes(keyword));
       });
+
+      const grid = document.getElementById('productGrid');
+      const noData = document.getElementById('noDataState');
 
       if (filtered.length === 0) {
         grid.innerHTML = '';
         noData.classList.remove('hidden');
         return;
       }
-
       noData.classList.add('hidden');
 
       grid.innerHTML = filtered.map(item => {
@@ -224,17 +290,12 @@
           logoUrl = extractImageUrl(item[logoKey]);
         }
 
-        // 2. 提取主要產品內容 (Bottom Content)
+        // 2. 提取主要產品內容
         const mainProductDescKey = Object.keys(item).find(k => k.includes('主要產品') || k.includes('描述') || k.includes('簡介'));
         const mainProductDesc = mainProductDescKey ? item[mainProductDescKey] : '';
 
-        // 3. 組合中間的規格列表（第一項固定為「產品線 / 原廠」）
-        const detailsList = [];
-        
-        // 加入「產品線 / 原廠」第一列
-        detailsList.push({ key: '產品線 / 原廠', val: titleName });
-
-        // 加入其他欄位 (排除 Logo 列、主要產品列與主標題列)
+        // 3. 組合中間規格列表（第一項固定為「產品線 / 原廠」）
+        const detailsList = [{ key: '產品線 / 原廠', val: titleName }];
         Object.keys(item).forEach(k => {
           const isLogo = logoKey ? (k === logoKey) : k.toLowerCase().includes('logo');
           const isMainDesc = mainProductDescKey ? (k === mainProductDescKey) : k.includes('主要產品');
@@ -244,7 +305,6 @@
           }
         });
 
-        // 轉換為 HTML 格式
         const detailsHtml = detailsList.map(d => `
           <div class="flex justify-between items-center text-xs py-1.5 border-b border-gray-100 last:border-0">
             <span class="text-gray-400 font-medium shrink-0 mr-2">${d.key}</span>
@@ -255,26 +315,105 @@
         return `
           <article class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all flex flex-col justify-between space-y-4 group">
             <div class="space-y-4">
-              
-              <!-- 1. 置中 Logo (寬度為卡片 2/3) -->
               ${logoUrl ? `
                 <div class="flex justify-center items-center pt-2 pb-1 min-h-[70px]">
                   <img src="${logoUrl}" alt="${titleName} Logo" class="w-2/3 max-h-20 object-contain mx-auto" onerror="this.parentNode.style.display='none'">
                 </div>
               ` : ''}
-
-              <!-- 2. 統一的規格資訊區塊 (包含：產品線 / 原廠 & 所在地 / 區域 等) -->
               <div class="bg-gray-50/70 p-3.5 rounded-xl space-y-0.5">
                 ${detailsHtml}
               </div>
-
-              <!-- 3. 最下方主要產品內容 (內容完全置中) -->
               ${mainProductDesc ? `
                 <div class="bg-brand-50/60 p-4 rounded-xl border border-brand-100/60 text-center text-xs font-medium text-gray-700 leading-relaxed">
                   ${mainProductDesc}
                 </div>
               ` : ''}
+            </div>
+          </article>
+        `;
+      }).join('');
 
+      lucide.createIcons();
+    }
+
+    // 🌟 頁籤 2: Ready to Demonstrations 動態渲染
+    function renderDemonstrationTab() {
+      const sheetData = allData.demonstration;
+      const headers = sheetData.headers || [];
+      const rawData = sheetData.rows || [];
+
+      document.getElementById('productLineCount').innerText = rawData.length;
+
+      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+      const filtered = rawData.filter(item => {
+        return !keyword || Object.values(item).some(val => String(val).toLowerCase().includes(keyword));
+      });
+
+      const grid = document.getElementById('productGrid');
+      const noData = document.getElementById('noDataState');
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        noData.classList.remove('hidden');
+        return;
+      }
+      noData.classList.add('hidden');
+
+      grid.innerHTML = filtered.map(item => {
+        const keys = Object.keys(item);
+        const titleKey = keys.find(k => k.includes('名稱') || k.includes('標題') || k.includes('Demo') || k.includes('專案')) || keys[0];
+        const titleName = item[titleKey] || 'Demo 項目';
+
+        let imageUrl = null;
+        const imgKey = keys.find(k => k.toLowerCase().includes('logo') || k.includes('圖片') || k.includes('圖示') || k.includes('image'));
+        if (imgKey && item[imgKey]) {
+          imageUrl = extractImageUrl(item[imgKey]);
+        }
+
+        const descKey = keys.find(k => k.includes('描述') || k.includes('說明') || k.includes('內容') || k.includes('備註'));
+        const descText = descKey ? item[descKey] : '';
+
+        const detailsList = [];
+        keys.forEach(k => {
+          const isImg = imgKey ? (k === imgKey) : false;
+          const isDesc = descKey ? (k === descKey) : false;
+          const isTitle = (k === titleKey);
+          if (!isImg && !isDesc && !isTitle && item[k]) {
+            detailsList.push({ key: k, val: item[k] });
+          }
+        });
+
+        const detailsHtml = detailsList.map(d => `
+          <div class="flex justify-between items-center text-xs py-1.5 border-b border-gray-100 last:border-0">
+            <span class="text-gray-400 font-medium shrink-0 mr-2">${d.key}</span>
+            <span class="text-gray-700 font-semibold text-right break-all">${d.val}</span>
+          </div>
+        `).join('');
+
+        return `
+          <article class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all flex flex-col justify-between space-y-4 group">
+            <div class="space-y-4">
+              ${imageUrl ? `
+                <div class="flex justify-center items-center pt-2 pb-1 min-h-[70px]">
+                  <img src="${imageUrl}" alt="${titleName}" class="w-2/3 max-h-24 object-contain mx-auto" onerror="this.parentNode.style.display='none'">
+                </div>
+              ` : ''}
+              
+              <h3 class="text-base font-bold text-gray-800 text-center group-hover:text-brand-500 transition-colors leading-snug">
+                ${titleName}
+              </h3>
+
+              ${detailsList.length > 0 ? `
+                <div class="bg-gray-50/70 p-3.5 rounded-xl space-y-0.5">
+                  ${detailsHtml}
+                </div>
+              ` : ''}
+
+              ${descText ? `
+                <div class="bg-brand-50/60 p-4 rounded-xl border border-brand-100/60 text-center text-xs font-medium text-gray-700 leading-relaxed">
+                  ${descText}
+                </div>
+              ` : ''}
             </div>
           </article>
         `;
@@ -291,18 +430,13 @@
       } else {
         clearBtn.classList.add('hidden');
       }
-      renderProducts();
+      renderCurrentTab();
     }
 
     function clearSearch() {
       document.getElementById('searchInput').value = '';
       document.getElementById('clearSearchBtn').classList.add('hidden');
-      renderProducts();
-    }
-
-    function updateStats() {
-      const categories = new Set(rawData.map(item => item[productLineKey]).filter(Boolean));
-      document.getElementById('productLineCount').innerText = categories.size;
+      renderCurrentTab();
     }
   </script>
 </body>
