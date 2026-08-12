@@ -246,7 +246,7 @@
       return match ? match[0] : null;
     }
 
-    // 頁籤 1: 產品目錄與產品線總覽 (保持原本設定)
+    // 頁籤 1: 產品目錄與產品線總覽
     function renderProductLineTab() {
       const sheetData = allData.productLine;
       const headers = sheetData.headers || [];
@@ -326,7 +326,7 @@
       lucide.createIcons();
     }
 
-    // 🌟 頁籤 2: Ready to Demonstrations 動態渲染 (微調邏輯)
+    // 🌟 頁籤 2: Ready to Demonstrations (圖檔順序已調整至 Topic 之下)
     function renderDemonstrationTab() {
       const sheetData = allData.demonstration;
       const headers = sheetData.headers || [];
@@ -352,7 +352,7 @@
       grid.innerHTML = filtered.map(item => {
         const keys = Object.keys(item);
 
-        // 1. 識別專案標題名稱
+        // 1. 識別專案標題名稱 (Topic)
         const titleKey = keys.find(k => k.includes('名稱') || k.includes('標題') || k.includes('Demo') || k.includes('專案') || k.toLowerCase().includes('name') || k.toLowerCase().includes('title')) || keys[0];
         const titleName = item[titleKey] || 'Demo 項目';
 
@@ -372,7 +372,7 @@
           }
         }
 
-        // 3. 識別 Overview / Description 內文 (隱藏欄位名稱)
+        // 3. 識別 Overview / Description 內文
         const overviewKey = keys.find(k => k.toLowerCase().includes('overview') || k.includes('描述') || k.includes('說明') || k.includes('內容') || k.includes('備註') || k.toLowerCase().includes('description'));
         const overviewText = overviewKey ? item[overviewKey] : '';
 
@@ -383,20 +383,17 @@
         const ownerKey = keys.find(k => k.toLowerCase().includes('owner') || k.includes('負責') || k.includes('擁有者'));
         const ownerVal = ownerKey ? item[ownerKey] : '';
 
-        // 5. 構建規格列表 (🌟 Owner 挪至 Relative Product Line 正下方，並移除 Overview & Block Diagram 字樣)
+        // 5. 構建規格列表 (Relative Product Line 首列，Owner 緊接在後)
         const detailsList = [];
 
-        // 首列：Relative Product Line
         if (relProdKey && relProdVal) {
           detailsList.push({ key: relProdKey, val: relProdVal });
         }
 
-        // 次列：Owner (緊接在 Relative Product Line 之下)
         if (ownerKey && ownerVal) {
           detailsList.push({ key: ownerKey, val: ownerVal });
         }
 
-        // 其他規格欄位
         keys.forEach(k => {
           const isTitle = (k === titleKey);
           const isImg = (k === imgKey) || (imageUrl && item[k] === imageUrl);
@@ -420,29 +417,29 @@
           <article class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all flex flex-col justify-between space-y-4 group">
             <div class="space-y-4">
               
-              <!-- 專案標題 (如 Local Dimming Control) -->
+              <!-- 🌟 1. 專案標題 Topic -->
               <h3 class="text-xl font-bold text-brand-500 text-center leading-snug pt-1">
                 ${titleName}
               </h3>
 
-              <!-- 規格框 (Relative Product Line 首列，Owner 緊接其下) -->
+              <!-- 🌟 2. Block Diagram 圖檔 (已挪至 Topic 正下方) -->
+              ${imageUrl ? `
+                <div class="pt-2 flex justify-center items-center">
+                  <img src="${imageUrl}" alt="${titleName} Diagram" class="w-full max-h-60 object-contain rounded-lg" onerror="this.parentNode.style.display='none'">
+                </div>
+              ` : ''}
+
+              <!-- 🌟 3. 規格框 (Relative Product Line 首列，Owner 緊接其下) -->
               ${detailsList.length > 0 ? `
                 <div class="bg-gray-50/70 p-3.5 rounded-xl space-y-0.5">
                   ${detailsHtml}
                 </div>
               ` : ''}
 
-              <!-- Overview 說明 (無 Overview 標籤字樣，內容直接呈現) -->
+              <!-- 🌟 4. Overview 說明 (內容直接呈現) -->
               ${overviewText ? `
                 <div class="bg-brand-50/60 p-4 rounded-xl border border-brand-100/60 text-xs font-medium text-gray-700 leading-relaxed text-left">
                   ${overviewText}
-                </div>
-              ` : ''}
-
-              <!-- Block Diagram 圖檔 (無 Block Diagram 標籤字樣，直接渲染內嵌圖檔) -->
-              ${imageUrl ? `
-                <div class="pt-2 flex justify-center items-center">
-                  <img src="${imageUrl}" alt="${titleName} Diagram" class="w-full max-h-60 object-contain rounded-lg" onerror="this.parentNode.style.display='none'">
                 </div>
               ` : ''}
 
