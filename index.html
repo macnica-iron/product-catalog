@@ -74,7 +74,7 @@
   <!-- Main Content 主體內容 -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
 
-    <!-- 搜尋欄與切換控制區域 (電商風格 Switcher) -->
+    <!-- 搜尋欄與切換控制區域 -->
     <section class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-3 items-center justify-between">
       
       <!-- 搜尋輸入框 -->
@@ -95,7 +95,7 @@
         </button>
       </div>
 
-      <!-- 🌟 電商顯示格式切換器 (大圖像 / 小圖像 / 列表式) -->
+      <!-- 電商顯示格式切換器 -->
       <div class="flex items-center justify-between w-full md:w-auto gap-3 pt-1 md:pt-0 border-t md:border-t-0 border-gray-100">
         <span class="text-xs text-gray-400 font-medium whitespace-nowrap">顯示模式:</span>
         <div class="inline-flex bg-gray-100 p-1 rounded-xl border border-gray-200/80 gap-1">
@@ -147,9 +147,9 @@
       </button>
     </div>
 
-    <!-- 🌟 動態顯示容器（由 JavaScript 依選擇模式動態渲染不同排版） -->
+    <!-- 動態顯示容器 -->
     <section id="displayContainer">
-      <!-- 內容將動態注入 -->
+      <!-- 內容動態注入 -->
     </section>
   </main>
 
@@ -167,7 +167,6 @@
     let productLineKey = '';
     let mainProductKey = '';
     
-    // 預設模式：讀取 LocalStorage 或預設為 'list' (可選 'large' | 'compact' | 'list')
     let currentViewMode = localStorage.getItem('macnica_view_mode') || 'list';
 
     window.onload = function() {
@@ -180,7 +179,6 @@
       // ⚠️ 務必替換為新 Google Sheet 部署出來的 Web App URL（結尾須為 /exec）
       const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwfn_bO64Jso9QkpmSRWfXTvEIIh8Q4Ovy0uhqycJRhV1j5Dt-9jJWpjqTvi-lFTB4o/exec";
 
-      // 1. 本地快取秒開
       const localCache = localStorage.getItem('macnica_product_line_local');
       if (localCache) {
         try {
@@ -191,7 +189,6 @@
         setSearchDisabled(true);
       }
 
-      // 2. 背景同步最新資料
       fetch(GAS_API_URL)
         .then(response => {
           if (!response.ok) throw new Error('網路連線失敗');
@@ -258,7 +255,6 @@
       return match ? match[0] : null;
     }
 
-    // 🌟 切換模式
     function changeViewMode(mode) {
       if (currentViewMode === mode) return;
       currentViewMode = mode;
@@ -280,7 +276,6 @@
       });
     }
 
-    // 渲染分流引擎
     function renderCurrentView() {
       const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
       const container = document.getElementById('displayContainer');
@@ -308,7 +303,7 @@
       lucide.createIcons();
     }
 
-    // 🌟 模式 1：大圖像模式 (大卡片)
+    // 模式 1：大圖像模式
     function renderLargeGrid(data, container) {
       let html = '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">';
       html += data.map(item => {
@@ -362,7 +357,7 @@
       container.innerHTML = html;
     }
 
-    // 🌟 模式 2：小圖像模式 (櫥窗緊湊卡片)
+    // 模式 2：小圖像模式
     function renderCompactGrid(data, container) {
       let html = '<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">';
       html += data.map(item => {
@@ -409,7 +404,7 @@
       container.innerHTML = html;
     }
 
-    // 🌟 模式 3：列表式模式 (Bar List)
+    // 🌟 模式 3：列表式模式 (Bar 支援 3 行高度排版)
     function renderListView(data, container) {
       let html = '<div class="space-y-2">';
       html += data.map((item, idx) => {
@@ -427,16 +422,19 @@
 
         return `
           <div class="product-bar-item bg-white rounded-xl border border-gray-200/80 shadow-sm hover:border-brand-300 transition-all overflow-hidden" id="bar-item-${idx}">
+            <!-- 🌟 桌機固定高度設定為 md:h-20 (80px)，完美容納 3 行文字 -->
             <div 
               onclick="handleRowClick(${idx})" 
-              class="px-3.5 py-2.5 sm:px-4 md:py-0 md:h-16 flex items-center justify-between gap-3 md:gap-5 cursor-pointer md:cursor-default select-none hover:bg-brand-50/15 md:hover:bg-transparent transition-colors"
+              class="px-3.5 py-2.5 sm:px-4 md:py-0 md:h-20 flex items-center justify-between gap-3 md:gap-5 cursor-pointer md:cursor-default select-none hover:bg-brand-50/15 md:hover:bg-transparent transition-colors"
             >
-              <div class="w-20 sm:w-24 h-9 shrink-0 bg-gray-50 border border-gray-100 rounded-lg p-1 flex items-center justify-center">
+              <!-- 1. Logo -->
+              <div class="w-20 sm:w-24 h-10 shrink-0 bg-gray-50 border border-gray-100 rounded-lg p-1 flex items-center justify-center">
                 ${logoUrl ? `
-                  <img src="${logoUrl}" alt="${titleName}" class="max-h-7 max-w-[90%] object-contain [mix-blend-mode:multiply]" loading="lazy">
+                  <img src="${logoUrl}" alt="${titleName}" class="max-h-8 max-w-[90%] object-contain [mix-blend-mode:multiply]" loading="lazy">
                 ` : `<span class="text-[10px] text-gray-400">無 Logo</span>`}
               </div>
 
+              <!-- 2. 產品線名稱 + 所在地標籤 -->
               <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2.5 shrink-0 md:w-48 lg:w-56 min-w-0">
                 <h3 class="text-sm font-bold text-gray-800 tracking-tight truncate" title="${titleName}">
                   ${titleName}
@@ -448,13 +446,15 @@
                 ` : ''}
               </div>
 
+              <!-- 🌟 3. 主要產品：升級為 line-clamp-3 (三行高度與自動換行) -->
               <div class="hidden md:flex flex-1 items-center gap-2 border-l border-gray-100 pl-4 min-w-0 h-full py-2">
                 <span class="text-gray-400 font-medium shrink-0 text-[11px] self-start mt-0.5">主要產品:</span>
-                <p class="text-gray-700 text-xs font-medium leading-snug line-clamp-2 break-words" title="${mainProductDesc}">
+                <p class="text-gray-700 text-xs font-medium leading-relaxed line-clamp-3 break-words" title="${mainProductDesc}">
                   ${mainProductDesc || '<span class="text-gray-300 italic">無詳細產品描述</span>'}
                 </p>
               </div>
 
+              <!-- 4. 手機展開圖示 -->
               <div class="flex md:hidden items-center gap-1.5 shrink-0">
                 <span class="text-[11px] text-gray-400 font-medium">查看</span>
                 <div class="w-6 h-6 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400">
@@ -463,6 +463,7 @@
               </div>
             </div>
 
+            <!-- 5. 手機展開抽屜 -->
             <div id="detail-${idx}" class="hidden md:hidden border-t border-gray-100 bg-gray-50/50 px-4 py-3 space-y-1.5">
               <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1">
                 <i data-lucide="layers" class="w-3 h-3 text-brand-500"></i> 主要產品內容
