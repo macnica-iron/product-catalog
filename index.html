@@ -153,7 +153,7 @@
     </section>
   </main>
 
-  <!-- 🌟 彈出詳細卡片 Modal (Popup Window) -->
+  <!-- 彈出詳細卡片 Modal -->
   <div 
     id="productModal" 
     onclick="handleModalBackdropClick(event)"
@@ -198,7 +198,6 @@
       updateSwitcherButtons();
       fetchSheetData();
 
-      // 支援鍵盤 Esc 鍵關閉彈窗
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeProductModal();
       });
@@ -332,7 +331,6 @@
       lucide.createIcons();
     }
 
-    // 🌟 建立大卡片內容 HTML 模板（共用於大圖像及彈跳視窗）
     function buildCardHtml(item) {
       const titleName = item[mainProductKey] || item[productLineKey] || '未命名項目';
 
@@ -393,7 +391,7 @@
       container.innerHTML = html;
     }
 
-    // 模式 2：小圖像模式 (點擊彈出大卡片)
+    // 模式 2：小圖像模式
     function renderCompactGrid(data, container) {
       let html = '<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">';
       html += data.map((item, idx) => {
@@ -443,7 +441,7 @@
       container.innerHTML = html;
     }
 
-    // 模式 3：列表式模式 (點擊彈出大卡片)
+    // 🌟 模式 3：列表式模式 (已拿掉右側詳情文字與圖示)
     function renderListView(data, container) {
       let html = '<div class="space-y-2">';
       html += data.map((item, idx) => {
@@ -485,21 +483,14 @@
                 ` : ''}
               </div>
 
-              <!-- 3. 主要產品 (三行高度預覽) -->
-              <div class="hidden md:flex flex-1 items-center gap-2 border-l border-gray-100 pl-4 min-w-0 h-full py-2">
-                <span class="text-gray-400 font-medium shrink-0 text-[11px] self-start mt-0.5">主要產品:</span>
+              <!-- 3. 主要產品 -->
+              <div class="flex-1 flex items-center gap-2 border-l border-gray-100 pl-4 min-w-0 h-full py-2">
+                <span class="text-gray-400 font-medium shrink-0 text-[11px] self-start mt-0.5 hidden sm:inline">主要產品:</span>
                 <p class="text-gray-700 text-xs font-medium leading-relaxed line-clamp-3 break-words">
                   ${mainProductDesc || '<span class="text-gray-300 italic">無詳細產品描述</span>'}
                 </p>
               </div>
 
-              <!-- 4. 查看詳情指示 -->
-              <div class="flex items-center gap-1.5 shrink-0 text-gray-400 group-hover:text-brand-500">
-                <span class="text-[11px] font-medium hidden sm:inline text-brand-600">詳情</span>
-                <div class="w-6 h-6 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center">
-                  <i data-lucide="external-link" class="w-3.5 h-3.5 text-gray-400"></i>
-                </div>
-              </div>
             </div>
           </div>
         `;
@@ -508,7 +499,6 @@
       container.innerHTML = html;
     }
 
-    // 🌟 彈出 Modal 詳細卡片控制
     function openProductModal(idx) {
       const item = currentFilteredData[idx];
       if (!item) return;
@@ -519,7 +509,7 @@
       body.innerHTML = buildCardHtml(item);
       modal.classList.remove('hidden');
       modal.classList.add('flex');
-      document.body.classList.add('overflow-hidden'); // 禁止背景滾動
+      document.body.classList.add('overflow-hidden');
 
       lucide.createIcons();
     }
