@@ -63,7 +63,7 @@
         </h1>
       </div>
 
-      <!-- 右上角統計數據（產品線數量） -->
+      <!-- 右上角統計數據 -->
       <div id="statsBadge" class="flex items-center text-xs bg-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-sm">
         <span>產品線數量: <strong id="productLineCount" class="text-yellow-300 font-bold ml-1 text-sm">0</strong></span>
       </div>
@@ -74,9 +74,11 @@
   <!-- Main Content 主體內容 -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
 
-    <!-- 搜尋欄與手機快捷控制區 -->
-    <section class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-3 items-center justify-between">
-      <div class="relative w-full sm:flex-1">
+    <!-- 搜尋欄與切換控制區域 (電商風格 Switcher) -->
+    <section class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-3 items-center justify-between">
+      
+      <!-- 搜尋輸入框 -->
+      <div class="relative w-full md:flex-1">
         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
           <i data-lucide="search" class="w-5 h-5"></i>
         </div>
@@ -93,20 +95,45 @@
         </button>
       </div>
 
-      <!-- 手機/平板端專用的全部展開/收起按鈕 -->
-      <div class="flex md:hidden items-center gap-2 w-full sm:w-auto justify-end">
-        <button 
-          onclick="toggleAllRows(true)" 
-          class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-brand-50 hover:text-brand-600 rounded-lg transition-colors flex items-center gap-1"
-        >
-          <i data-lucide="chevrons-down" class="w-3.5 h-3.5"></i> 全部展開
-        </button>
-        <button 
-          onclick="toggleAllRows(false)" 
-          class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-brand-50 hover:text-brand-600 rounded-lg transition-colors flex items-center gap-1"
-        >
-          <i data-lucide="chevrons-up" class="w-3.5 h-3.5"></i> 全部收起
-        </button>
+      <!-- 🌟 電商顯示格式切換器 (大圖像 / 小圖像 / 列表式) -->
+      <div class="flex items-center justify-between w-full md:w-auto gap-3 pt-1 md:pt-0 border-t md:border-t-0 border-gray-100">
+        <span class="text-xs text-gray-400 font-medium whitespace-nowrap">顯示模式:</span>
+        <div class="inline-flex bg-gray-100 p-1 rounded-xl border border-gray-200/80 gap-1">
+          
+          <!-- 大圖像模式 -->
+          <button 
+            id="view-btn-large" 
+            onclick="changeViewMode('large')" 
+            title="大圖像卡片"
+            class="view-switch-btn p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all text-gray-500 hover:text-gray-900"
+          >
+            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">大圖像</span>
+          </button>
+
+          <!-- 小圖像模式 -->
+          <button 
+            id="view-btn-compact" 
+            onclick="changeViewMode('compact')" 
+            title="小圖像櫥窗"
+            class="view-switch-btn p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all text-gray-500 hover:text-gray-900"
+          >
+            <i data-lucide="grid" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">小圖像</span>
+          </button>
+
+          <!-- 列表式模式 -->
+          <button 
+            id="view-btn-list" 
+            onclick="changeViewMode('list')" 
+            title="列表式條列"
+            class="view-switch-btn p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all bg-brand-500 text-white shadow-sm"
+          >
+            <i data-lucide="list" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">列表式</span>
+          </button>
+
+        </div>
       </div>
     </section>
 
@@ -120,9 +147,9 @@
       </button>
     </div>
 
-    <!-- 🌟 響應式產品線列表容器 -->
-    <section id="productBarList" class="space-y-2">
-      <!-- 動態渲染每一行 Bar -->
+    <!-- 🌟 動態顯示容器（由 JavaScript 依選擇模式動態渲染不同排版） -->
+    <section id="displayContainer">
+      <!-- 內容將動態注入 -->
     </section>
   </main>
 
@@ -139,9 +166,13 @@
     let headers = [];
     let productLineKey = '';
     let mainProductKey = '';
+    
+    // 預設模式：讀取 LocalStorage 或預設為 'list' (可選 'large' | 'compact' | 'list')
+    let currentViewMode = localStorage.getItem('macnica_view_mode') || 'list';
 
     window.onload = function() {
       lucide.createIcons();
+      updateSwitcherButtons();
       fetchSheetData();
     };
 
@@ -149,7 +180,7 @@
       // ⚠️ 務必替換為新 Google Sheet 部署出來的 Web App URL（結尾須為 /exec）
       const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwfn_bO64Jso9QkpmSRWfXTvEIIh8Q4Ovy0uhqycJRhV1j5Dt-9jJWpjqTvi-lFTB4o/exec";
 
-      // 1. 本地快取秒開機制
+      // 1. 本地快取秒開
       const localCache = localStorage.getItem('macnica_product_line_local');
       if (localCache) {
         try {
@@ -199,7 +230,7 @@
       }
 
       detectKeyColumns();
-      renderProductBars();
+      renderCurrentView();
       setSearchDisabled(false);
       updateStats();
     }
@@ -227,10 +258,32 @@
       return match ? match[0] : null;
     }
 
-    // 🌟 大螢幕直接後綴 Inline / 小螢幕展開抽屜
-    function renderProductBars() {
+    // 🌟 切換模式
+    function changeViewMode(mode) {
+      if (currentViewMode === mode) return;
+      currentViewMode = mode;
+      localStorage.setItem('macnica_view_mode', mode);
+      updateSwitcherButtons();
+      renderCurrentView();
+    }
+
+    function updateSwitcherButtons() {
+      const modes = ['large', 'compact', 'list'];
+      modes.forEach(m => {
+        const btn = document.getElementById(`view-btn-${m}`);
+        if (!btn) return;
+        if (m === currentViewMode) {
+          btn.className = "view-switch-btn p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all bg-brand-500 text-white shadow-sm";
+        } else {
+          btn.className = "view-switch-btn p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all text-gray-500 hover:text-gray-900";
+        }
+      });
+    }
+
+    // 渲染分流引擎
+    function renderCurrentView() {
       const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-      const listContainer = document.getElementById('productBarList');
+      const container = document.getElementById('displayContainer');
       const noData = document.getElementById('noDataState');
 
       const filtered = rawData.filter(item => {
@@ -238,58 +291,156 @@
       });
 
       if (filtered.length === 0) {
-        listContainer.innerHTML = '';
+        container.innerHTML = '';
         noData.classList.remove('hidden');
         return;
       }
-
       noData.classList.add('hidden');
 
-      listContainer.innerHTML = filtered.map((item, idx) => {
-        const titleName = item[mainProductKey] || item[productLineKey] || '未命名項目';
+      if (currentViewMode === 'large') {
+        renderLargeGrid(filtered, container);
+      } else if (currentViewMode === 'compact') {
+        renderCompactGrid(filtered, container);
+      } else {
+        renderListView(filtered, container);
+      }
 
-        // 1. Logo 解析
+      lucide.createIcons();
+    }
+
+    // 🌟 模式 1：大圖像模式 (大卡片)
+    function renderLargeGrid(data, container) {
+      let html = '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">';
+      html += data.map(item => {
+        const titleName = item[mainProductKey] || item[productLineKey] || '未命名項目';
+        
         let logoUrl = null;
         const logoKey = Object.keys(item).find(k => k.toLowerCase().includes('logo') || k.includes('圖片') || k.includes('圖示'));
-        if (logoKey && item[logoKey]) {
-          logoUrl = extractImageUrl(item[logoKey]);
-        }
+        if (logoKey && item[logoKey]) logoUrl = extractImageUrl(item[logoKey]);
 
-        // 2. 所在地 / 區域解析
+        const mainProductDescKey = Object.keys(item).find(k => k.includes('主要產品') || k.includes('描述') || k.includes('簡介'));
+        const mainProductDesc = mainProductDescKey ? item[mainProductDescKey] : '';
+
+        const detailsList = [{ key: '產品線 / 原廠', val: titleName }];
+        Object.keys(item).forEach(k => {
+          const isLogo = logoKey ? (k === logoKey) : k.toLowerCase().includes('logo');
+          const isMainDesc = mainProductDescKey ? (k === mainProductDescKey) : k.includes('主要產品');
+          const isTitle = (k === mainProductKey);
+          if (!isLogo && !isMainDesc && !isTitle && item[k]) {
+            detailsList.push({ key: k, val: item[k] });
+          }
+        });
+
+        const detailsHtml = detailsList.map(d => `
+          <div class="flex justify-between items-center text-xs py-1.5 border-b border-gray-100 last:border-0">
+            <span class="text-gray-400 font-medium shrink-0 mr-2">${d.key}</span>
+            <span class="text-gray-700 font-semibold text-right break-all">${d.val}</span>
+          </div>
+        `).join('');
+
+        return `
+          <article class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all flex flex-col justify-between space-y-4 group">
+            <div class="space-y-4">
+              ${logoUrl ? `
+                <div class="w-full h-20 flex items-center justify-center p-2 rounded-xl bg-gray-50/50">
+                  <img src="${logoUrl}" alt="${titleName}" class="max-h-14 max-w-[80%] object-contain mx-auto transition-transform duration-200 group-hover:scale-105 [mix-blend-mode:multiply]" loading="lazy">
+                </div>
+              ` : '<div class="h-20 flex items-center justify-center text-gray-300 text-xs">無 Logo</div>'}
+              <div class="bg-gray-50/70 p-3.5 rounded-xl space-y-0.5">
+                ${detailsHtml}
+              </div>
+              ${mainProductDesc ? `
+                <div class="bg-brand-50/60 p-4 rounded-xl border border-brand-100/60 text-center text-xs font-medium text-gray-700 leading-relaxed">
+                  ${mainProductDesc}
+                </div>
+              ` : ''}
+            </div>
+          </article>
+        `;
+      }).join('');
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // 🌟 模式 2：小圖像模式 (櫥窗緊湊卡片)
+    function renderCompactGrid(data, container) {
+      let html = '<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">';
+      html += data.map(item => {
+        const titleName = item[mainProductKey] || item[productLineKey] || '未命名項目';
+
+        let logoUrl = null;
+        const logoKey = Object.keys(item).find(k => k.toLowerCase().includes('logo') || k.includes('圖片') || k.includes('圖示'));
+        if (logoKey && item[logoKey]) logoUrl = extractImageUrl(item[logoKey]);
+
+        const locationKey = Object.keys(item).find(k => k.includes('所在地') || k.includes('區域') || k.toLowerCase().includes('location'));
+        const locationVal = locationKey ? item[locationKey] : '';
+
+        const mainProductDescKey = Object.keys(item).find(k => k.includes('主要產品') || k.includes('描述') || k.includes('簡介'));
+        const mainProductDesc = mainProductDescKey ? item[mainProductDescKey] : '';
+
+        return `
+          <div class="bg-white rounded-xl p-3.5 border border-gray-200/80 shadow-sm hover:shadow-md hover:border-brand-300 transition-all flex flex-col justify-between group relative" title="${titleName} - ${mainProductDesc}">
+            <div class="space-y-2">
+              <div class="w-full h-14 bg-gray-50/80 rounded-lg p-1.5 flex items-center justify-center border border-gray-100">
+                ${logoUrl ? `
+                  <img src="${logoUrl}" alt="${titleName}" class="max-h-10 max-w-[85%] object-contain [mix-blend-mode:multiply]" loading="lazy">
+                ` : `<span class="text-[10px] text-gray-400">Logo</span>`}
+              </div>
+              <div class="text-center space-y-1">
+                <h4 class="text-xs font-bold text-gray-800 tracking-tight truncate group-hover:text-brand-500 transition-colors">
+                  ${titleName}
+                </h4>
+                ${locationVal ? `
+                  <span class="inline-block text-[10px] font-medium text-brand-600 bg-brand-50 px-1.5 py-0.2 rounded-full border border-brand-100/60">
+                    ${locationVal}
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+            ${mainProductDesc ? `
+              <div class="mt-2.5 pt-2 border-t border-gray-100 text-[11px] text-gray-500 leading-snug line-clamp-2 break-words">
+                ${mainProductDesc}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // 🌟 模式 3：列表式模式 (Bar List)
+    function renderListView(data, container) {
+      let html = '<div class="space-y-2">';
+      html += data.map((item, idx) => {
+        const titleName = item[mainProductKey] || item[productLineKey] || '未命名項目';
+
+        let logoUrl = null;
+        const logoKey = Object.keys(item).find(k => k.toLowerCase().includes('logo') || k.includes('圖片') || k.includes('圖示'));
+        if (logoKey && item[logoKey]) logoUrl = extractImageUrl(item[logoKey]);
+
         const locationKey = Object.keys(item).find(k => k.includes('所在地') || k.includes('區域') || k.toLowerCase().includes('location') || k.toLowerCase().includes('region'));
         const locationVal = locationKey ? item[locationKey] : '';
 
-        // 3. 主要產品內容解析
         const mainProductDescKey = Object.keys(item).find(k => k.includes('主要產品') || k.includes('描述') || k.includes('簡介'));
         const mainProductDesc = mainProductDescKey ? item[mainProductDescKey] : '';
 
         return `
           <div class="product-bar-item bg-white rounded-xl border border-gray-200/80 shadow-sm hover:border-brand-300 transition-all overflow-hidden" id="bar-item-${idx}">
-            
-            <!-- 🌟 主 Bar 條目 -->
             <div 
               onclick="handleRowClick(${idx})" 
-              class="px-3.5 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between gap-3 md:gap-5 cursor-pointer md:cursor-default select-none hover:bg-brand-50/15 md:hover:bg-transparent transition-colors"
+              class="px-3.5 py-2.5 sm:px-4 md:py-0 md:h-16 flex items-center justify-between gap-3 md:gap-5 cursor-pointer md:cursor-default select-none hover:bg-brand-50/15 md:hover:bg-transparent transition-colors"
             >
-              <!-- 1. Logo (固定規格比例) -->
               <div class="w-20 sm:w-24 h-9 shrink-0 bg-gray-50 border border-gray-100 rounded-lg p-1 flex items-center justify-center">
                 ${logoUrl ? `
-                  <img 
-                    src="${logoUrl}" 
-                    alt="${titleName}" 
-                    class="max-h-7 max-w-[90%] object-contain [mix-blend-mode:multiply]"
-                    loading="lazy"
-                    onerror="this.parentNode.innerHTML='<span class=\\'text-[10px] text-gray-400\\'>Logo</span>'"
-                  >
+                  <img src="${logoUrl}" alt="${titleName}" class="max-h-7 max-w-[90%] object-contain [mix-blend-mode:multiply]" loading="lazy">
                 ` : `<span class="text-[10px] text-gray-400">無 Logo</span>`}
               </div>
 
-              <!-- 2. 產品線名稱 + 所在地標籤 (桌機鎖定欄寬以整齊對齊) -->
               <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2.5 shrink-0 md:w-48 lg:w-56 min-w-0">
-                <h3 class="text-sm font-bold text-gray-800 tracking-tight truncate">
+                <h3 class="text-sm font-bold text-gray-800 tracking-tight truncate" title="${titleName}">
                   ${titleName}
                 </h3>
-
                 ${locationVal ? `
                   <span class="inline-flex items-center text-[10px] font-medium text-brand-600 bg-brand-50 border border-brand-100 px-1.5 py-0.5 rounded-full shrink-0 w-fit">
                     ${locationVal}
@@ -297,15 +448,13 @@
                 ` : ''}
               </div>
 
-              <!-- 🌟 3. 大畫面 (Desktop/Pad) 直接接在最後面呈現 -->
-              <div class="hidden md:flex flex-1 items-center gap-2 border-l border-gray-100 pl-4 text-xs text-gray-600 min-w-0">
-                <span class="text-gray-400 font-medium shrink-0 text-[11px]">主要產品:</span>
-                <p class="truncate text-gray-700 font-medium" title="${mainProductDesc}">
+              <div class="hidden md:flex flex-1 items-center gap-2 border-l border-gray-100 pl-4 min-w-0 h-full py-2">
+                <span class="text-gray-400 font-medium shrink-0 text-[11px] self-start mt-0.5">主要產品:</span>
+                <p class="text-gray-700 text-xs font-medium leading-snug line-clamp-2 break-words" title="${mainProductDesc}">
                   ${mainProductDesc || '<span class="text-gray-300 italic">無詳細產品描述</span>'}
                 </p>
               </div>
 
-              <!-- 🌟 4. 小畫面 (Phone) 顯示展開箭頭與提示 -->
               <div class="flex md:hidden items-center gap-1.5 shrink-0">
                 <span class="text-[11px] text-gray-400 font-medium">查看</span>
                 <div class="w-6 h-6 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400">
@@ -314,33 +463,27 @@
               </div>
             </div>
 
-            <!-- 🌟 5. 小畫面展開抽屜（手機點擊後滑出展開，大畫面自動隱藏） -->
             <div id="detail-${idx}" class="hidden md:hidden border-t border-gray-100 bg-gray-50/50 px-4 py-3 space-y-1.5">
               <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1">
                 <i data-lucide="layers" class="w-3 h-3 text-brand-500"></i> 主要產品內容
               </div>
-              <div class="bg-white p-3 rounded-xl border border-brand-100/70 text-xs text-gray-700 leading-relaxed">
+              <div class="bg-white p-3 rounded-xl border border-brand-100/70 text-xs text-gray-700 leading-relaxed break-words">
                 ${mainProductDesc || '<span class="text-gray-400 italic">無主要產品內容</span>'}
               </div>
             </div>
-
           </div>
         `;
       }).join('');
-
-      lucide.createIcons();
+      html += '</div>';
+      container.innerHTML = html;
     }
 
-    // 手機版點擊切換展開/收起
     function handleRowClick(idx) {
-      if (window.innerWidth >= 768) return; // 螢幕寬度 >= 768px (桌機) 不需折疊
-
+      if (window.innerWidth >= 768) return;
       const detail = document.getElementById(`detail-${idx}`);
       const chevron = document.getElementById(`icon-chevron-${idx}`);
       if (!detail) return;
-
       const isCollapsed = detail.classList.contains('hidden');
-
       if (isCollapsed) {
         detail.classList.remove('hidden');
         if (chevron) chevron.classList.add('rotate-180', 'text-brand-500');
@@ -348,22 +491,6 @@
         detail.classList.add('hidden');
         if (chevron) chevron.classList.remove('rotate-180', 'text-brand-500');
       }
-    }
-
-    // 全部展開 / 全部收起 (手機版輔助)
-    function toggleAllRows(expand) {
-      const items = document.querySelectorAll('[id^="detail-"]');
-      const chevrons = document.querySelectorAll('[id^="icon-chevron-"]');
-
-      items.forEach((item, i) => {
-        if (expand) {
-          item.classList.remove('hidden');
-          if (chevrons[i]) chevrons[i].classList.add('rotate-180', 'text-brand-500');
-        } else {
-          item.classList.add('hidden');
-          if (chevrons[i]) chevrons[i].classList.remove('rotate-180', 'text-brand-500');
-        }
-      });
     }
 
     function handleSearch() {
@@ -374,13 +501,13 @@
       } else {
         clearBtn.classList.add('hidden');
       }
-      renderProductBars();
+      renderCurrentView();
     }
 
     function clearSearch() {
       document.getElementById('searchInput').value = '';
       document.getElementById('clearSearchBtn').classList.add('hidden');
-      renderProductBars();
+      renderCurrentView();
     }
 
     function updateStats() {
