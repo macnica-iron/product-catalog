@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Macnica - 產品線與即刻展示總覽</title>
+  <title>Macnica - 產品目錄與產品線總覽</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Custom Color System (RGB 116, 29, 128) -->
@@ -43,7 +43,7 @@
     </div>
     <div class="text-center space-y-1">
       <p class="text-base font-bold text-gray-800">資料同步中，請稍候...</p>
-      <p class="text-xs text-gray-500">正在從 Google Sheets 取得最新的資料庫內容</p>
+      <p class="text-xs text-gray-500">正在從 Google Sheets 取得最新的產品目錄</p>
     </div>
   </div>
 
@@ -51,49 +51,23 @@
   <header class="brand-gradient text-white shadow-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-row justify-between items-center gap-4">
       
-      <!-- 公司 Logo 與換行動態標題 -->
+      <!-- 公司 Logo 與換行副標題 -->
       <div class="flex flex-col items-start gap-1">
         <img 
           src="https://www.macnica.com/content/experience-fragments/macnicagwi/apac/galaxy/zh_tw/site/header/master/_jcr_content/root/image.coreimg.svg/1723113588126/macnica-new-logo.svg" 
           alt="Macnica Logo" 
           class="h-6 sm:h-7 object-contain [filter:brightness(0)_invert(1)]"
         >
-        <h1 id="headerSubtitle" class="text-xs sm:text-sm font-medium tracking-wider text-brand-100 opacity-90">
-          產品線總覽
+        <h1 class="text-xs sm:text-sm font-medium tracking-wider text-brand-100 opacity-90">
+          產品目錄與產品線總覽
         </h1>
       </div>
 
-      <!-- 右上角動態統計數據 -->
+      <!-- 右上角統計數據（產品線數量） -->
       <div id="statsBadge" class="flex items-center text-xs bg-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-sm">
-        <span id="statLabel">產品線數量:</span>
-        <strong id="productLineCount" class="text-yellow-300 font-bold ml-1 text-sm">0</strong>
+        <span>產品線數量: <strong id="productLineCount" class="text-yellow-300 font-bold ml-1 text-sm">0</strong></span>
       </div>
 
-    </div>
-
-    <!-- 主流切換分頁選單 -->
-    <div class="bg-black/10 border-t border-white/10 backdrop-blur-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-2 overflow-x-auto py-2">
-        
-        <button 
-          id="tab-productLine" 
-          onclick="switchTab('productLine')" 
-          class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap bg-white text-brand-700 shadow-sm"
-        >
-          <i data-lucide="package" class="w-4 h-4"></i>
-          <span>產品線總覽</span>
-        </button>
-
-        <button 
-          id="tab-demonstration" 
-          onclick="switchTab('demonstration')" 
-          class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap text-brand-100 hover:bg-white/10 hover:text-white"
-        >
-          <i data-lucide="presentation" class="w-4 h-4"></i>
-          <span>即刻展示總覽</span>
-        </button>
-
-      </div>
     </div>
   </header>
 
@@ -109,7 +83,7 @@
         <input 
           type="text" 
           id="searchInput"
-          placeholder="搜尋關鍵字、規格或名稱..." 
+          placeholder="搜尋主要產品名稱、規格或關鍵字..." 
           disabled
           class="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all shadow-sm disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
           oninput="handleSearch()"
@@ -123,34 +97,32 @@
     <!-- 查無資料提示 -->
     <div id="noDataState" class="hidden text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm space-y-3">
       <i data-lucide="package-x" class="w-12 h-12 text-gray-300 mx-auto"></i>
-      <h3 class="text-lg font-bold text-gray-700">找不到符合條件的項目</h3>
+      <h3 class="text-lg font-bold text-gray-700">找不到符合條件的產品</h3>
       <p class="text-sm text-gray-500">請嘗試更換關鍵字重新搜尋</p>
       <button onclick="clearSearch()" class="mt-2 inline-flex items-center gap-2 bg-brand-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-brand-600 transition-colors">
         清除搜尋條件
       </button>
     </div>
 
-    <!-- 列表卡片網格 (RWD: 手機 1 欄 / 平板 2 欄 / 桌機 3 欄) -->
+    <!-- 產品列表卡片網格 (RWD: 手機 1 欄 / 平板 2 欄 / 桌機 3 欄) -->
     <section id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- 內容將由 JavaScript 動態渲染 -->
+      <!-- 產品卡片將由 JavaScript 動態渲染 -->
     </section>
   </main>
 
   <!-- Footer 頁尾 -->
   <footer class="bg-white border-t border-gray-200 mt-auto py-6">
     <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500 space-y-1">
-      <p>Macnica 產品與展示視覺化查詢系統 &copy; Powered by Google Apps Script & GitHub Pages</p>
+      <p>Macnica 產品線視覺化查詢系統 &copy; Powered by Google Apps Script & GitHub Pages</p>
       <p class="text-gray-400">資料來源：Google Sheets 自動實時同步</p>
     </div>
   </footer>
 
   <script>
-    let allData = {
-      productLine: { headers: [], rows: [] },
-      demonstration: { headers: [], rows: [] }
-    };
-    
-    let activeTab = 'productLine';
+    let rawData = [];
+    let headers = [];
+    let productLineKey = '';
+    let mainProductKey = '';
 
     window.onload = function() {
       lucide.createIcons();
@@ -158,11 +130,11 @@
     };
 
     function fetchSheetData() {
-      // ⚠️ 務必替換為你真實的 Apps Script Web App 網址（結尾須為 /exec）
-      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZj0MaQKmVItG0rtXQBtQeGjp8JmQ7_Vs8sBvNAfm36ra2i8ikcXoXMBA4xgrnpAQpEQ/exec";
+      // ⚠️ 務必替換為新 Google Sheet 部署出來的 Web App URL（結尾須為 /exec）
+      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwfn_bO64Jso9QkpmSRWfXTvEIIh8Q4Ovy0uhqycJRhV1j5Dt-9jJWpjqTvi-lFTB4o/exec";
 
-      // 1. 本機快取秒開機制
-      const localCache = localStorage.getItem('macnica_local_data');
+      // 1. 本地快取秒開機制
+      const localCache = localStorage.getItem('macnica_product_line_local');
       if (localCache) {
         try {
           const parsedData = JSON.parse(localCache);
@@ -172,7 +144,7 @@
         setSearchDisabled(true);
       }
 
-      // 2. 背景請求最新資料
+      // 2. 背景同步最新資料
       fetch(GAS_API_URL)
         .then(response => {
           if (!response.ok) throw new Error('網路連線失敗');
@@ -180,7 +152,7 @@
         })
         .then(data => {
           if (!data.error) {
-            localStorage.setItem('macnica_local_data', JSON.stringify(data));
+            localStorage.setItem('macnica_product_line_local', JSON.stringify(data));
           }
           onDataLoaded(data, false);
         })
@@ -190,7 +162,7 @@
         });
     }
 
-    function onDataLoaded(response, isFromLocalCache) {
+    function onDataLoaded(response, isFromCache) {
       const loadingOverlay = document.getElementById('globalLoading');
       if (loadingOverlay) {
         loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
@@ -198,20 +170,22 @@
       }
 
       if (response.error) {
-        if (!isFromLocalCache) alert('資料讀取失敗：' + response.error);
+        if (!isFromCache) alert('資料讀取失敗：' + response.error);
         return;
       }
 
-      if (response.productLine) {
-        allData.productLine = response.productLine;
-        allData.demonstration = response.demonstration || { headers: [], rows: [] };
-      } else {
-        allData.productLine = { headers: response.headers || [], rows: response.rows || [] };
-        allData.demonstration = { headers: [], rows: [] };
+      headers = response.headers || [];
+      rawData = response.rows || [];
+
+      if (!rawData || rawData.length === 0) {
+        document.getElementById('noDataState').classList.remove('hidden');
+        return;
       }
 
+      detectKeyColumns();
+      renderProducts();
       setSearchDisabled(false);
-      renderCurrentTab();
+      updateStats();
     }
 
     function onDataError(err) {
@@ -225,33 +199,9 @@
       if (searchInput) searchInput.disabled = disabled;
     }
 
-    function switchTab(tabKey) {
-      if (activeTab === tabKey) return;
-      activeTab = tabKey;
-
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.className = "tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap text-brand-100 hover:bg-white/10 hover:text-white";
-      });
-
-      const activeBtn = document.getElementById(`tab-${tabKey}`);
-      if (activeBtn) {
-        activeBtn.className = "tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap bg-white text-brand-700 shadow-sm";
-      }
-
-      clearSearch();
-      renderCurrentTab();
-    }
-
-    function renderCurrentTab() {
-      if (activeTab === 'productLine') {
-        document.getElementById('headerSubtitle').innerText = "產品線總覽";
-        document.getElementById('statLabel').innerText = "產品線數量:";
-        renderProductLineTab();
-      } else {
-        document.getElementById('headerSubtitle').innerText = "即刻展示總覽";
-        document.getElementById('statLabel').innerText = "展示項目數:";
-        renderDemonstrationTab();
-      }
+    function detectKeyColumns() {
+      productLineKey = headers.find(h => h.includes('產品線') || h.includes('類別') || h.toLowerCase().includes('category')) || headers[0];
+      mainProductKey = headers.find(h => h.includes('產品') || h.includes('品名') || h.includes('品牌') || h.toLowerCase().includes('product')) || headers[0];
     }
 
     function extractImageUrl(str) {
@@ -261,45 +211,38 @@
       return match ? match[0] : null;
     }
 
-    // 頁籤 1: 產品線總覽
-    function renderProductLineTab() {
-      const sheetData = allData.productLine;
-      const headers = sheetData.headers || [];
-      const rawData = sheetData.rows || [];
-
-      const productLineKey = headers.find(h => h.includes('產品線') || h.includes('類別') || h.toLowerCase().includes('category')) || headers[0];
-      const mainProductKey = headers.find(h => h.includes('產品') || h.includes('品名') || h.includes('品牌') || h.toLowerCase().includes('product')) || headers[0];
-
-      const categories = new Set(rawData.map(item => item[productLineKey]).filter(Boolean));
-      document.getElementById('productLineCount').innerText = categories.size;
-
+    function renderProducts() {
       const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+      const grid = document.getElementById('productGrid');
+      const noData = document.getElementById('noDataState');
+
       const filtered = rawData.filter(item => {
         return !keyword || Object.values(item).some(val => String(val).toLowerCase().includes(keyword));
       });
-
-      const grid = document.getElementById('productGrid');
-      const noData = document.getElementById('noDataState');
 
       if (filtered.length === 0) {
         grid.innerHTML = '';
         noData.classList.remove('hidden');
         return;
       }
+
       noData.classList.add('hidden');
 
       grid.innerHTML = filtered.map(item => {
         const titleName = item[mainProductKey] || item[productLineKey] || '未命名項目';
 
+        // 1. Logo URL
         let logoUrl = null;
         const logoKey = Object.keys(item).find(k => k.toLowerCase().includes('logo') || k.includes('圖片') || k.includes('圖示'));
         if (logoKey && item[logoKey]) {
           logoUrl = extractImageUrl(item[logoKey]);
         }
 
+        // 2. 主要產品內容
         const mainProductDescKey = Object.keys(item).find(k => k.includes('主要產品') || k.includes('描述') || k.includes('簡介'));
         const mainProductDesc = mainProductDescKey ? item[mainProductDescKey] : '';
 
+        // 3. 規格框列表 (產品線 / 原廠 首列)
         const detailsList = [{ key: '產品線 / 原廠', val: titleName }];
         Object.keys(item).forEach(k => {
           const isLogo = logoKey ? (k === logoKey) : k.toLowerCase().includes('logo');
@@ -320,136 +263,23 @@
         return `
           <article class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all flex flex-col justify-between space-y-4 group">
             <div class="space-y-4">
+              
+              <!-- 置中 Logo (寬度 2/3) -->
               ${logoUrl ? `
                 <div class="flex justify-center items-center pt-2 pb-1 min-h-[70px]">
                   <img src="${logoUrl}" alt="${titleName} Logo" class="w-2/3 max-h-20 object-contain mx-auto" onerror="this.parentNode.style.display='none'">
                 </div>
               ` : ''}
+
+              <!-- 規格框 -->
               <div class="bg-gray-50/70 p-3.5 rounded-xl space-y-0.5">
                 ${detailsHtml}
               </div>
+
+              <!-- 主要產品描述 (置中) -->
               ${mainProductDesc ? `
                 <div class="bg-brand-50/60 p-4 rounded-xl border border-brand-100/60 text-center text-xs font-medium text-gray-700 leading-relaxed">
                   ${mainProductDesc}
-                </div>
-              ` : ''}
-            </div>
-          </article>
-        `;
-      }).join('');
-
-      lucide.createIcons();
-    }
-
-    // 頁籤 2: 即刻展示總覽
-    function renderDemonstrationTab() {
-      const sheetData = allData.demonstration;
-      const headers = sheetData.headers || [];
-      const rawData = sheetData.rows || [];
-
-      document.getElementById('productLineCount').innerText = rawData.length;
-
-      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-      const filtered = rawData.filter(item => {
-        return !keyword || Object.values(item).some(val => String(val).toLowerCase().includes(keyword));
-      });
-
-      const grid = document.getElementById('productGrid');
-      const noData = document.getElementById('noDataState');
-
-      if (filtered.length === 0) {
-        grid.innerHTML = '';
-        noData.classList.remove('hidden');
-        return;
-      }
-      noData.classList.add('hidden');
-
-      grid.innerHTML = filtered.map(item => {
-        const keys = Object.keys(item);
-
-        const titleKey = keys.find(k => k.includes('名稱') || k.includes('標題') || k.includes('Demo') || k.includes('專案') || k.toLowerCase().includes('name') || k.toLowerCase().includes('title')) || keys[0];
-        const titleName = item[titleKey] || 'Demo 項目';
-
-        let imageUrl = null;
-        const imgKey = keys.find(k => k.toLowerCase().includes('block') || k.toLowerCase().includes('diagram') || k.toLowerCase().includes('logo') || k.includes('圖片') || k.includes('圖示') || k.toLowerCase().includes('image'));
-        if (imgKey && item[imgKey]) {
-          imageUrl = extractImageUrl(item[imgKey]);
-        }
-        if (!imageUrl) {
-          for (const k of keys) {
-            const url = extractImageUrl(item[k]);
-            if (url) {
-              imageUrl = url;
-              break;
-            }
-          }
-        }
-
-        const overviewKey = keys.find(k => k.toLowerCase().includes('overview') || k.includes('描述') || k.includes('說明') || k.includes('內容') || k.includes('備註') || k.toLowerCase().includes('description'));
-        const overviewText = overviewKey ? item[overviewKey] : '';
-
-        const relProdKey = keys.find(k => k.toLowerCase().includes('relative') || k.toLowerCase().includes('prodcut') || k.toLowerCase().includes('product') || k.includes('相對') || k.includes('相關'));
-        const relProdVal = relProdKey ? item[relProdKey] : '';
-
-        const ownerKey = keys.find(k => k.toLowerCase().includes('owner') || k.includes('負責') || k.includes('擁有者'));
-        const ownerVal = ownerKey ? item[ownerKey] : '';
-
-        const detailsList = [];
-
-        if (relProdKey && relProdVal) {
-          detailsList.push({ key: relProdKey, val: relProdVal });
-        }
-
-        if (ownerKey && ownerVal) {
-          detailsList.push({ key: ownerKey, val: ownerVal });
-        }
-
-        keys.forEach(k => {
-          const isTitle = (k === titleKey);
-          const isImg = (k === imgKey) || (imageUrl && item[k] === imageUrl);
-          const isOverview = (k === overviewKey);
-          const isRelProd = (k === relProdKey);
-          const isOwner = (k === ownerKey);
-
-          if (!isTitle && !isImg && !isOverview && !isRelProd && !isOwner && item[k]) {
-            detailsList.push({ key: k, val: item[k] });
-          }
-        });
-
-        const detailsHtml = detailsList.map(d => `
-          <div class="flex justify-between items-center text-xs py-1.5 border-b border-gray-100 last:border-0">
-            <span class="text-gray-400 font-medium shrink-0 mr-2">${d.key}</span>
-            <span class="text-gray-700 font-semibold text-right break-all">${d.val}</span>
-          </div>
-        `).join('');
-
-        return `
-          <article class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all flex flex-col justify-between space-y-4 group">
-            <div class="space-y-4">
-              
-              <!-- 1. 專案標題 Topic -->
-              <h3 class="text-xl font-bold text-brand-500 text-center leading-snug pt-1">
-                ${titleName}
-              </h3>
-
-              <!-- 2. Block Diagram 圖檔 (於 Topic 正下方) -->
-              ${imageUrl ? `
-                <div class="pt-2 flex justify-center items-center">
-                  <img src="${imageUrl}" alt="${titleName} Diagram" class="w-full max-h-60 object-contain rounded-lg" onerror="this.parentNode.style.display='none'">
-                </div>
-              ` : ''}
-
-              <!-- 3. 規格框 (Relative Product Line 首列，Owner 緊接其下) -->
-              ${detailsList.length > 0 ? `
-                <div class="bg-gray-50/70 p-3.5 rounded-xl space-y-0.5">
-                  ${detailsHtml}
-                </div>
-              ` : ''}
-
-              <!-- 4. Overview 說明內容 -->
-              ${overviewText ? `
-                <div class="bg-brand-50/60 p-4 rounded-xl border border-brand-100/60 text-xs font-medium text-gray-700 leading-relaxed text-left">
-                  ${overviewText}
                 </div>
               ` : ''}
 
@@ -469,13 +299,18 @@
       } else {
         clearBtn.classList.add('hidden');
       }
-      renderCurrentTab();
+      renderProducts();
     }
 
     function clearSearch() {
       document.getElementById('searchInput').value = '';
       document.getElementById('clearSearchBtn').classList.add('hidden');
-      renderCurrentTab();
+      renderProducts();
+    }
+
+    function updateStats() {
+      const categories = new Set(rawData.map(item => item[productLineKey]).filter(Boolean));
+      document.getElementById('productLineCount').innerText = categories.size;
     }
   </script>
 </body>
