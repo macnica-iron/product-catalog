@@ -228,7 +228,7 @@
       });
     };
 
-    // ⚠️ 務必換成您 Apps Script 最新部署的 Web App URL（結尾須為 /exec）
+    // ⚠️ 請換成您真實的 Apps Script API 網址（結尾為 /exec）
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwfn_bO64Jso9QkpmSRWfXTvEIIh8Q4Ovy0uhqycJRhV1j5Dt-9jJWpjqTvi-lFTB4o/exec";
 
     function setRefreshSpinning(isSpinning) {
@@ -241,23 +241,7 @@
       }
     }
 
-    // 寬限時間設為 45 秒，避免 Google 冷啟動被提早截斷
-    async function fetchWithTimeout(url, timeoutMs = 45000) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timer);
-        return response;
-      } catch (error) {
-        clearTimeout(timer);
-        if (error.name === 'AbortError') {
-          throw new Error('伺服器回應逾時（超過 45 秒）。若為首次開啟請重試一次。');
-        }
-        throw error;
-      }
-    }
-
+    // 🌟 原生 fetch 直接請求，無人為逾時中斷限制
     function fetchSheetData() {
       const localCache = localStorage.getItem('macnica_product_line_local');
       if (localCache) {
@@ -269,7 +253,7 @@
         setSearchDisabled(true);
       }
 
-      fetchWithTimeout(GAS_API_URL)
+      fetch(GAS_API_URL)
         .then(response => {
           if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status}`);
           return response.json();
@@ -286,6 +270,7 @@
         });
     }
 
+    // 🌟 原生 fetch 重新整理請求
     function refreshData() {
       setRefreshSpinning(true);
       localStorage.removeItem('macnica_product_line_local');
@@ -301,7 +286,7 @@
 
       const refreshUrl = `${GAS_API_URL}?refresh=${Date.now()}`;
 
-      fetchWithTimeout(refreshUrl)
+      fetch(refreshUrl)
         .then(response => {
           if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status}`);
           return response.json();
