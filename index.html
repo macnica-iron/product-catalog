@@ -14,7 +14,7 @@
               50: '#fcf5fd',
               100: '#f8eafd',
               200: '#f0d3fa',
-              500: '#741D80', // 主色系 RGB(116,29,128)
+              500: '#741D80',
               600: '#61166c',
               700: '#50105a',
             }
@@ -38,8 +38,8 @@
       <i data-lucide="database" class="w-6 h-6 text-brand-500 absolute"></i>
     </div>
     <div class="text-center space-y-1">
-      <p class="text-base font-bold text-gray-800">資料同步中，請稍候...</p>
-      <p class="text-xs text-gray-500">正在從 Google Sheets 取得最新的產品目錄</p>
+      <p id="loadingStatusText" class="text-base font-bold text-gray-800">資料同步中，請稍候...</p>
+      <p class="text-xs text-gray-500">正在連線 Google Sheets 資料庫</p>
     </div>
   </div>
 
@@ -68,7 +68,7 @@
           id="refreshBtn"
           onclick="refreshData()" 
           title="清除快取並重新整理"
-          class="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white border border-white/15 transition-all shadow-sm backdrop-blur-sm"
+          class="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white border border-white/15 transition-all shadow-sm backdrop-blur-sm cursor-pointer"
         >
           <i data-lucide="rotate-cw" id="refreshIcon" class="w-3.5 h-3.5"></i>
         </button>
@@ -228,31 +228,21 @@
       });
     };
 
-    // ⚠️ 請務必替換為您真實的 Apps Script Web App URL（末端須為 /exec）
+    // ⚠️ 務必換成您 Apps Script 最新部署的 Web App URL（結尾須為 /exec）
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwfn_bO64Jso9QkpmSRWfXTvEIIh8Q4Ovy0uhqycJRhV1j5Dt-9jJWpjqTvi-lFTB4o/exec";
 
-    let spinTimeout = null;
     function setRefreshSpinning(isSpinning) {
       const btn = document.getElementById('refreshBtn');
       const icon = document.getElementById('refreshIcon');
-      const svg = btn ? btn.querySelector('svg') : null;
-
-      if (isSpinning) {
-        if (btn) btn.disabled = true;
-        if (icon) icon.classList.add('animate-spin');
-        if (svg) svg.classList.add('animate-spin');
-        clearTimeout(spinTimeout);
-        spinTimeout = setTimeout(() => { setRefreshSpinning(false); }, 15000);
-      } else {
-        clearTimeout(spinTimeout);
-        if (btn) btn.disabled = false;
-        if (icon) icon.classList.remove('animate-spin');
-        if (svg) svg.classList.remove('animate-spin');
+      if (btn) btn.disabled = isSpinning;
+      if (icon) {
+        if (isSpinning) icon.classList.add('animate-spin');
+        else icon.classList.remove('animate-spin');
       }
     }
 
-    // 🌟 帶有超時保護的 fetch 封裝
-    async function fetchWithTimeout(url, timeoutMs = 20000) {
+    // 寬限時間設為 45 秒，避免 Google 冷啟動被提早截斷
+    async function fetchWithTimeout(url, timeoutMs = 45000) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
@@ -262,7 +252,7 @@
       } catch (error) {
         clearTimeout(timer);
         if (error.name === 'AbortError') {
-          throw new Error('連線逾時 (Timeout)：Google 伺服器運算時間過長，請稍後重試。');
+          throw new Error('伺服器回應逾時（超過 45 秒）。若為首次開啟請重試一次。');
         }
         throw error;
       }
@@ -281,7 +271,7 @@
 
       fetchWithTimeout(GAS_API_URL)
         .then(response => {
-          if (!response.ok) throw new Error(`HTTP 錯誤碼: ${response.status}`);
+          if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status}`);
           return response.json();
         })
         .then(data => {
@@ -301,7 +291,9 @@
       localStorage.removeItem('macnica_product_line_local');
 
       const loadingOverlay = document.getElementById('globalLoading');
+      const statusText = document.getElementById('loadingStatusText');
       if (loadingOverlay) {
+        if (statusText) statusText.innerText = '正在重新整理，同步最新資料...';
         loadingOverlay.classList.remove('hidden');
         loadingOverlay.classList.remove('opacity-0');
       }
@@ -311,7 +303,7 @@
 
       fetchWithTimeout(refreshUrl)
         .then(response => {
-          if (!response.ok) throw new Error(`HTTP 錯誤碼: ${response.status}`);
+          if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status}`);
           return response.json();
         })
         .then(data => {
@@ -339,7 +331,7 @@
       }
 
       if (response.error) {
-        if (!isFromCache) alert('後端讀取錯誤：' + response.error);
+        if (!isFromCache) alert('資料庫讀取失敗：' + response.error);
         return;
       }
 
@@ -364,12 +356,11 @@
       updateStats();
     }
 
-    // 🌟 真實錯誤回報
     function onDataError(err) {
       setRefreshSpinning(false);
       const loadingOverlay = document.getElementById('globalLoading');
       if (loadingOverlay) loadingOverlay.classList.add('hidden');
-      alert('連線失敗：' + (err.message || err));
+      alert('無法連線至 Google Sheets：' + (err.message || err));
     }
 
     function setSearchDisabled(disabled) {
