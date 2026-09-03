@@ -63,28 +63,27 @@
         </h1>
       </div>
 
-      <!-- 🌟 右側功能區：最後更新時間、重新整理按鈕、產品線數量 -->
-      <div class="flex flex-wrap items-center justify-center md:justify-end gap-2.5">
+      <!-- 右側功能區：最後更新時間、重新整理按鈕(圓形膠囊)、產品線數量 -->
+      <div class="flex flex-wrap items-center justify-center md:justify-end gap-2">
         
         <!-- Google Sheet 最後更新時間 -->
-        <div class="text-[11px] text-brand-100 flex items-center gap-1 bg-black/15 px-2.5 py-1.5 rounded-lg backdrop-blur-sm border border-white/10">
+        <div class="text-[11px] text-brand-100 flex items-center gap-1 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/15">
           <span class="opacity-75">最後更新:</span>
           <span id="lastUpdatedDisplay" class="font-semibold text-white tracking-wide">--</span>
         </div>
 
-        <!-- 重新整理按鈕 -->
+        <!-- 🌟 重新整理按鈕 (圖示限定、圓形膠囊風格與右側一致) -->
         <button 
           id="refreshBtn"
           onclick="refreshData()" 
-          title="清除快取並重新抓取最新資料"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/15 hover:bg-white/25 active:scale-95 text-white border border-white/20 transition-all shadow-sm backdrop-blur-sm"
+          title="清除快取並重新整理"
+          class="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white border border-white/15 transition-all shadow-sm backdrop-blur-sm"
         >
           <i data-lucide="rotate-cw" id="refreshIcon" class="w-3.5 h-3.5"></i>
-          <span>重新整理</span>
         </button>
 
         <!-- 產品線數量 -->
-        <div id="statsBadge" class="flex items-center text-xs bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/15">
+        <div id="statsBadge" class="flex items-center text-xs bg-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-sm border border-white/15">
           <span>產品線: <strong id="productLineCount" class="text-yellow-300 font-bold ml-1 text-sm">0</strong></span>
         </div>
 
@@ -236,14 +235,12 @@
       { name: '澳洲', flag: '🇦🇺' }
     ];
 
-    // 🌟 國旗前置轉換函數：挪到名稱前面並加入一個半形空格（如 "🇯🇵 日本"）
+    // 國旗前置轉換函數（國旗 + 半形空格 + 國家）
     function addCountryFlags(str) {
       if (!str) return '';
       let result = String(str);
       COUNTRY_FLAGS.forEach(({ name, flag }) => {
-        // 先移除可能重複存在的國旗
         result = result.replace(new RegExp(`${flag}\\s*`, 'g'), '');
-        // 替換為：國旗 + 半形空格 + 國家名稱
         result = result.replace(new RegExp(`(${name})`, 'g'), `${flag} $1`);
       });
       return result;
@@ -259,8 +256,33 @@
       });
     };
 
-    // ⚠️ 務必替換為新 Google Sheet 部署出來的 Web App URL（結尾須為 /exec）
+    // ⚠️ 請替換為您的 Apps Script Web App URL（末端須為 /exec）
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwfn_bO64Jso9QkpmSRWfXTvEIIh8Q4Ovy0uhqycJRhV1j5Dt-9jJWpjqTvi-lFTB4o/exec";
+
+    // 🌟 控制重新整理按鈕動畫與防呆狀態
+    let spinTimeout = null;
+    function setRefreshSpinning(isSpinning) {
+      const btn = document.getElementById('refreshBtn');
+      const icon = document.getElementById('refreshIcon');
+      const svg = btn ? btn.querySelector('svg') : null;
+
+      if (isSpinning) {
+        if (btn) btn.disabled = true;
+        if (icon) icon.classList.add('animate-spin');
+        if (svg) svg.classList.add('animate-spin');
+
+        clearTimeout(spinTimeout);
+        // 8 秒安全保護：避免請求卡住導致圖示一直轉
+        spinTimeout = setTimeout(() => {
+          setRefreshSpinning(false);
+        }, 8000);
+      } else {
+        clearTimeout(spinTimeout);
+        if (btn) btn.disabled = false;
+        if (icon) icon.classList.remove('animate-spin');
+        if (svg) svg.classList.remove('animate-spin');
+      }
+    }
 
     function fetchSheetData() {
       const localCache = localStorage.getItem('macnica_product_line_local');
@@ -290,15 +312,12 @@
         });
     }
 
-    // 🌟 重新整理功能：清除快取 + 穿透 Apps Script 後端快取
+    // 重新整理功能
     function refreshData() {
-      const refreshIcon = document.getElementById('refreshIcon');
-      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+      setRefreshSpinning(true);
 
-      // 1. 清除本地快取
       localStorage.removeItem('macnica_product_line_local');
 
-      // 2. 顯示全螢幕 Loading
       const loadingOverlay = document.getElementById('globalLoading');
       if (loadingOverlay) {
         loadingOverlay.classList.remove('hidden');
@@ -306,7 +325,6 @@
       }
       setSearchDisabled(true);
 
-      // 3. 帶上 refresh 參數破除後端快取
       const refreshUrl = `${GAS_API_URL}?refresh=${Date.now()}`;
 
       fetch(refreshUrl)
@@ -325,11 +343,13 @@
           onDataError(err);
         })
         .finally(() => {
-          if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+          setRefreshSpinning(false);
         });
     }
 
     function onDataLoaded(response, isFromCache) {
+      setRefreshSpinning(false);
+
       const loadingOverlay = document.getElementById('globalLoading');
       if (loadingOverlay) {
         loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
@@ -344,7 +364,6 @@
       headers = response.headers || [];
       rawData = response.rows || [];
 
-      // 更新最後更新日期
       const lastUpdated = response.lastUpdated || localStorage.getItem('macnica_last_updated') || '已同步';
       if (response.lastUpdated) {
         localStorage.setItem('macnica_last_updated', response.lastUpdated);
@@ -364,6 +383,7 @@
     }
 
     function onDataError(err) {
+      setRefreshSpinning(false);
       const loadingOverlay = document.getElementById('globalLoading');
       if (loadingOverlay) loadingOverlay.classList.add('hidden');
       alert('無法連線至 Google Sheets API，請檢查 Apps Script 發布權限是否設為「所有人」。');
@@ -434,7 +454,7 @@
       lucide.createIcons();
     }
 
-    // 建立大卡片內容 HTML 模板（官網另開新視窗 + 國旗在前）
+    // 建立大卡片內容 HTML 模板
     function buildCardHtml(item) {
       const titleName = item[mainProductKey] || item[productLineKey] || '未命名項目';
 
@@ -461,8 +481,6 @@
 
       const detailsHtml = detailsList.map(d => {
         let displayVal = d.val;
-        
-        // 官網欄位點擊另開新分頁
         if (d.key.includes('官網') || (typeof d.val === 'string' && (d.val.startsWith('http://') || d.val.startsWith('https://')))) {
           const url = d.val.startsWith('http') ? d.val : `https://${d.val}`;
           displayVal = `
@@ -513,7 +531,7 @@
       container.innerHTML = html;
     }
 
-    // 模式 2：小圖像模式（不顯示主要產品內容）
+    // 模式 2：小圖像模式
     function renderCompactGrid(data, container) {
       let html = '<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">';
       html += data.map((item, idx) => {
@@ -555,7 +573,7 @@
       container.innerHTML = html;
     }
 
-    // 模式 3：列表式模式（手機居中、粉色主要產品框支援 4 行）
+    // 🌟 模式 3：列表式模式（高度隨資訊自適應、移除中間分隔線、手機名稱精準置中）
     function renderListView(data, container) {
       let html = '<div class="space-y-2">';
       html += data.map((item, idx) => {
@@ -576,45 +594,47 @@
             onclick="openProductModal(${idx})" 
             class="product-bar-item bg-white rounded-xl border border-gray-200/80 shadow-sm hover:border-brand-400 hover:ring-2 hover:ring-brand-100 transition-all overflow-hidden cursor-pointer"
           >
-            <div class="px-3.5 py-3 md:py-0 md:h-28 flex items-center justify-between gap-3 md:gap-5 select-none hover:bg-brand-50/15 transition-colors">
+            <!-- 移除固定高度限制，改為由內容自適應的高度 -->
+            <div class="px-3.5 py-3 sm:px-4 md:px-5 flex items-center justify-between gap-3 md:gap-5 select-none hover:bg-brand-50/15 transition-colors">
               
-              <!-- 🌟 小畫面專屬排版 (md:hidden)：Logo(左) + 原廠名稱(正中間) + 產地(右) -->
-              <div class="flex md:hidden items-center justify-between w-full gap-2">
+              <!-- 🌟 1. 小畫面專屬排版 (md:hidden)：原廠名稱以絕對定位鎖定在整個 Bar 的正中心 -->
+              <div class="relative flex md:hidden items-center justify-between w-full min-h-[38px]">
+                
                 <!-- 左：Logo -->
-                <div class="w-16 h-9 shrink-0 bg-gray-50 border border-gray-100 rounded-lg p-1 flex items-center justify-center">
+                <div class="w-16 h-9 shrink-0 bg-gray-50 border border-gray-100 rounded-lg p-1 flex items-center justify-center z-10">
                   ${logoUrl ? `
                     <img src="${logoUrl}" alt="${titleName}" class="max-h-7 max-w-[90%] object-contain [mix-blend-mode:multiply]" loading="lazy">
                   ` : `<span class="text-[9px] text-gray-400">Logo</span>`}
                 </div>
 
-                <!-- 中：產品線 / 原廠名稱 (置中) -->
-                <div class="flex-1 text-center px-1 min-w-0">
-                  <h3 class="text-xs sm:text-sm font-bold text-gray-800 tracking-tight truncate" title="${titleName}">
+                <!-- 中：產品線 / 原廠名稱 (絕對居中整個 Bar，不受右側寬度擠壓) -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none px-20">
+                  <h3 class="text-xs sm:text-sm font-bold text-gray-800 tracking-tight truncate text-center" title="${titleName}">
                     ${titleName}
                   </h3>
                 </div>
 
-                <!-- 右：產地標籤 (含國旗在前) -->
-                <div class="shrink-0 flex justify-end">
+                <!-- 右：產地標籤 (國旗在前) -->
+                <div class="shrink-0 flex justify-end z-10">
                   ${locationVal ? `
                     <span class="inline-flex items-center text-[10px] font-medium text-brand-600 bg-brand-50 border border-brand-100 px-2 py-0.5 rounded-full whitespace-nowrap">
                       ${locationVal}
                     </span>
-                  ` : '<span class="w-2"></span>'}
+                  ` : '<span class="w-1"></span>'}
                 </div>
               </div>
 
-              <!-- 🌟 大畫面排版 (hidden md:flex)：Logo + 名稱&產地 + 粉色 4 行主要產品框 -->
-              <div class="hidden md:flex items-center justify-between w-full h-full gap-5">
+              <!-- 🌟 2. 大畫面排版 (hidden md:flex)：移除縱向分隔線，以粉色框優雅呈現 4 行內容 -->
+              <div class="hidden md:flex items-center justify-between w-full gap-5">
                 
-                <!-- 1. Logo -->
+                <!-- Logo -->
                 <div class="w-24 h-11 shrink-0 bg-gray-50 border border-gray-100 rounded-lg p-1 flex items-center justify-center">
                   ${logoUrl ? `
                     <img src="${logoUrl}" alt="${titleName}" class="max-h-8 max-w-[90%] object-contain [mix-blend-mode:multiply]" loading="lazy">
                   ` : `<span class="text-[10px] text-gray-400">無 Logo</span>`}
                 </div>
 
-                <!-- 2. 產品線名稱 + 所在地標籤 -->
+                <!-- 產品線名稱 + 所在地標籤 -->
                 <div class="flex flex-col gap-1.5 shrink-0 w-48 lg:w-56 min-w-0">
                   <h3 class="text-sm font-bold text-gray-800 tracking-tight truncate" title="${titleName}">
                     ${titleName}
@@ -626,8 +646,8 @@
                   ` : ''}
                 </div>
 
-                <!-- 3. 主要產品 (拿掉標籤，粉色框，支援 4 行) -->
-                <div class="flex-1 flex items-center border-l border-gray-100 pl-4 min-w-0 h-full py-2">
+                <!-- 🌟 主要產品 (無分隔線，粉色框，依文字自適應伸縮高度) -->
+                <div class="flex-1 min-w-0 py-0.5">
                   <div class="w-full bg-brand-50/60 px-4 py-2.5 rounded-xl border border-brand-100/60 text-xs font-medium text-gray-700 leading-relaxed line-clamp-4 break-words">
                     ${mainProductDesc || '<span class="text-gray-300 italic">無詳細產品描述</span>'}
                   </div>
